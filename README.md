@@ -186,6 +186,7 @@ scripts/odoo-lint.sh --changed [<ref-git>] /chemin/vers/mon_module
 # neutralisée, admin/admin, série déduite du dump
 scripts/odoo-restore.sh ~/Downloads/client-2026-08-19.zip --db client_test
 scripts/odoo-stack.sh dbs
+scripts/odoo-config-inventory.sh client_test    # Studio, automatisations, vues, rapports, modules tiers
 
 # Accès déclaré à une base distante (identifiants hors dépôt, production en lecture seule)
 scripts/odoo_instance.py add mon_projet

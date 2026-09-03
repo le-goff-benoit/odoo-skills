@@ -121,8 +121,8 @@ Lis sa sortie, puis complète par une revue humaine :
 
 ## Étape 2 — Exécution réelle (Odoo local sous Docker)
 
-Le stack vit dans `~/.odoo19-agents/stack/`. Il monte les sources
-`19.0` + `19.0-enterprise` en lecture seule et le module sous test.
+Le stack vit dans `~/.odoo19-agents/stack/`. Il monte les sources enterprise de
+la série en lecture seule et le module sous test.
 
 Le stack est monté **dans la série du module** : image `odoo-qa:<série>`, base et
 volumes dédiés. Deux séries peuvent tourner côte à côte, mais l'image de chaque
@@ -144,9 +144,20 @@ Ce que tu vérifies :
 2. **Mise à jour** — `-u <module>` sur une base où il est déjà installé passe
    (c'est ce qui casse en production).
 3. **Désinstallation** — le module se désinstalle sans laisser d'erreur.
-4. **Tests Python** — tous verts. Un test ignoré (`skip`) doit être justifié.
+4. **Tests Python** — tous verts, **toute la suite du module**, pas seulement
+   les tests du lot. Un test ignoré (`skip`) doit être justifié. Un test rouge
+   antérieur au lot se prouve en rejouant la suite sur `HEAD` sans les
+   modifications : il va dans « Réserves » avec cette preuve, pas dans les
+   anomalies du lot.
 5. **Logs** — aucune trace `ERROR`/`CRITICAL`, aucune `WARNING` liée au module.
    Tu lis les logs, tu ne te contentes pas du code de retour.
+6. **Mise à niveau sur la copie du client** — dès qu'une sauvegarde existe :
+   ```bash
+   ~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_qa --update <module>
+   ```
+   C'est le seul contrôle qui voit les vues héritées cassées par une
+   personnalisation Studio, les données `noupdate` non reprises et les
+   enregistrements existants qui violent une nouvelle contrainte.
 
 Un module qui ne s'installe pas est un échec, quelle que soit la qualité du code.
 
@@ -156,8 +167,15 @@ Un module qui ne s'installe pas est un échec, quelle que soit la qualité du co
 
 Tu disposes d'un navigateur et d'un moteur PDF : ils sont **dans le conteneur**, pas
 sur l'hôte. Ne conclus jamais « pas de navigateur disponible » ou « wkhtmltopdf
-absent » : l'image `odoo19-qa` embarque Google Chrome, wkhtmltopdf 0.12.6 (patched qt)
-et poppler-utils.
+absent » : l'image `odoo-qa:<série>` embarque Google Chrome, wkhtmltopdf 0.12.6
+(patched qt) et poppler-utils. Sur le poste, `odoo_capture.py` (Playwright) sert
+aux captures recadrées destinées à la documentation.
+
+Piège connu : un tour qui échoue sur une **erreur console d'un module standard**
+(bundle JS, import `@account/...` introuvable) trahit un décalage entre le paquet
+Odoo de l'image et les sources enterprise montées, pas un défaut du module. Vérifie
+en désinstallant le module standard fautif sur la base de test avant d'incriminer
+le lot, et signale-le comme problème d'outillage.
 
 **Tours automatisés** — exécutés par `odoo-test.sh` :
 
@@ -200,6 +218,12 @@ En complément :
   bien couverts par un tour ou un test HTTP. Ce qui n'est pas couvert, tu le dis.
 - Si un parcours n'est pas automatisable, écris le scénario manuel reproductible
   (URL, login, clics, résultat attendu) plutôt que de le passer sous silence.
+- Le parcours se termine par un **rechargement** (ou fermer/rouvrir le document) et
+  un contrôle de la valeur **serveur** : un écran juste avec une base fausse est un
+  défaut de cache ou de rendu, pas une réussite.
+- Quand le lot est livré au client, la recette va dans
+  `changelog/<lot>/tests_navigateur.md` et les captures finales dans
+  `changelog/<lot>/captures/` (gabarits du skill `camptocamp-docs`).
 - Contrôle l'accès portail et les droits d'un utilisateur non-admin quand la
   fonctionnalité les concerne : le test en `admin` ne prouve rien sur les droits.
 

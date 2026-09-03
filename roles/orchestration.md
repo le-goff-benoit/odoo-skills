@@ -24,6 +24,12 @@ Lis ensuite `<projet>/.odoo-agents/PROJECT.md` et les dernières entrées de
 `JOURNAL.md`. Annonce en une ligne : **projet, série, origine de la série,
 modules concernés**. Toutes les étapes suivantes travaillent dans cette série.
 
+Cherche aussi une **copie du client** : sauvegarde dans le projet, base déjà
+restaurée (`odoo-stack.sh dbs`), instance déclarée (`odoo_instance.py list`).
+Elle sert aux trois étapes (existant en base, reproduction, mise à niveau réelle).
+Si elle manque et que la demande touche des données existantes, demande-la à
+l'utilisateur dès maintenant — sans bloquer la revue fonctionnelle.
+
 ## Étape 1 — Revue fonctionnelle (`odoo-functional-reviewer`)
 
 Applique le rôle `~/.odoo19-agents/roles/functional-review.md`.
@@ -72,7 +78,16 @@ sujet de cette livraison.
 
 Vérifie explicitement chaque critère d'acceptation de la spec de l'étape 1.
 
-## Étape 4 — Capitaliser (toujours, même quand tout s'est bien passé)
+## Étape 3b — Documenter (skill `camptocamp-docs`) quand l'utilisateur voit quelque chose
+
+Si la section « Ce que l'utilisateur verra » de la spec n'est pas vide, la
+livraison comprend le dossier `changelog/AAAA-MM-JJ_NN_titre-court/` du projet :
+`README.md`, `demande.md`, `tests_navigateur.md` (la recette de l'étape 3),
+`captures/`, et — pour un changement d'usage — le guide illustré DOCX + PDF et la
+communication client. Applique `~/.odoo19-agents/roles/docs.md` : captures depuis
+la copie locale restaurée, jamais depuis la production.
+
+Sans écran modifié, un `README.md` de changelog suffit.
 
 Une chaîne qui ne laisse pas de trace oblige la suivante à tout redécouvrir.
 
@@ -122,7 +137,10 @@ dans le compte-rendu final pour arbitrage.
 ## 5. Reste à faire / arbitrages
 <anomalies majeures et mineures non corrigées, angles morts, questions ouvertes>
 
-## 6. Capitalisation
+## 6. Livrables documentaires
+<dossier de changelog, guide (pages), communication — ou « aucun écran modifié »>
+
+## 7. Capitalisation
 <entrée de journal écrite, sections de PROJECT.md mises à jour, leçon candidate>
 ```
 

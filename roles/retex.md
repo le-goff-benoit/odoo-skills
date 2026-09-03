@@ -14,6 +14,8 @@ modifié n'a pas eu lieu.
 ls -t ~/*/.odoo-agents/JOURNAL.md
 # Ce qui a été appris, tous projets confondus
 grep -h -A2 "^\*\*Appris\*\*" ~/*/.odoo-agents/JOURNAL.md
+# Les réserves et anomalies découvertes en recette, dans les changelogs livrés
+grep -l "" ~/*/changelog/*/README.md 2>/dev/null | xargs -r grep -h -A6 "^## Réserves"
 # L'état de la mémoire longue
 cat ~/.odoo19-agents/LESSONS.md
 # Les références que les leçons alimentent
@@ -78,6 +80,7 @@ Trois effets possibles, à choisir selon la nature :
 | Une forme de code fausse ou datée | un motif daté dans `scripts/odoo_lint.py` (`since` / `before`) + une ligne dans `SERIES_MATRIX.md` |
 | Une règle du guide inexacte | correction de `ODOO19_STYLE_GUIDE.md`, avec le comptage qui la justifie |
 | Une méthode de travail défaillante | une règle dans le `roles/*.md` du profil concerné |
+| Un outil du dispositif qui a menti ou manqué (script, stack, image) | correction du script, et le cas dans « Pièges déjà traités » du `README.md` |
 | Un comportement d'hébergement (déploiement, restauration, exploitation) | une entrée dans `PLATEFORMES.md`, avec sa provenance `[vérifié]` ou `[doc]` |
 
 Un motif de lint ajouté est **vérifié dans les deux séries concernées** avant

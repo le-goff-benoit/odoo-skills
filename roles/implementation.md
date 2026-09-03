@@ -49,6 +49,12 @@ existant du projet est en français — dans ce cas, alignement sur le projet).
    dépendance ; un module absent d'une série antérieure non plus. La liste exacte
    est dans `SERIES_MATRIX.md`, et `odoo-lint.sh` la vérifie pour toi.
 
+6. **Pour un correctif : reproduis avant de corriger.** Sur la copie restaurée du
+   client quand elle existe (`odoo-restore.sh`), sinon sur une base neuve avec un
+   jeu de données minimal. Note l'enregistrement représentatif et l'état à
+   restaurer. Le test de non-régression s'écrit **d'abord**, et il doit être rouge
+   sur le code d'origine : un test qui n'a jamais échoué ne prouve rien.
+
 ## Règles d'écriture non négociables
 
 Elles sont détaillées dans le guide ; voici le rappel opérationnel **pour la
@@ -80,6 +86,10 @@ au lieu de `<chatter/>` avant la 18.0). En 19.4, la sécurité passe par
 - `UserError` / `ValidationError` / `AccessError`, jamais `Exception` nue.
 - Zéro `print`, zéro requête dans une boucle, zéro SQL brut évitable
   (et si SQL il y a : `odoo.tools.SQL`).
+- Une donnée `noupdate="1"` déjà en base **n'est pas corrigée** par `-u`. Si des
+  enregistrements existants doivent changer, prévois un hook de migration
+  idempotent (`migrations/<version>/post-*.py` ou `post_init_hook`), testé sur une
+  base où le module est déjà installé.
 
 **XML**
 - `<list>` (jamais `<tree>`) et `<chatter/>` à partir de la 18.0 ;
@@ -103,7 +113,12 @@ au lieu de `<chatter/>` avant la 18.0). En 19.4, la sécurité passe par
 **JS / OWL**
 - ES modules, alias `@web/...`, `@odoo/owl`, 4 espaces, double quotes.
 - `patch()` pour étendre le standard ; `Interaction` (pas `publicWidget`) côté frontend.
-- Déclaration dans le bon bundle d'`assets` du manifest.
+- Déclaration dans le bon bundle d'`assets` du manifest — et validation du bundle
+  dans un vrai navigateur (tour ou `odoo-shot.sh`), pas seulement de la syntaxe.
+- Toujours `await` `super`, les sauvegardes et les appels ORM ; après une écriture,
+  recharger le record pour relire les champs calculés. Un dialogue résout ses trois
+  branches (confirmer, annuler, fermer) sans laisser de promesse en suspens.
+- Un patch de prototype se limite strictement au modèle et au champ concernés.
 
 ## Tests — ils font partie de la livraison
 
@@ -137,6 +152,15 @@ Tu ne considères pas une fonctionnalité livrée sans test. Minimum :
    ```bash
    ~/.odoo19-agents/scripts/odoo-test.sh <nom_technique_du_module>
    ```
+   Et, dès qu'une sauvegarde du client existe, **mets le module à niveau sur sa
+   copie** — c'est ce qui casse en production, pas l'installation sur base neuve :
+   ```bash
+   ~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test --update <module>
+   ```
+4b. Pour une livraison applicative, incrémente `version` dans le manifest, sur la
+   composante convenue avec le projet, **lue dans le fichier** — jamais mémorisée
+   d'une conversation ou d'un changelog. Une modification purement documentaire
+   ne change pas la version.
 5. Rends un compte-rendu : série visée, fichiers créés/modifiés, ce qui est couvert
    par les tests, ce qui ne l'est pas, et les points restés en suspens.
 

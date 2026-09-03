@@ -49,6 +49,22 @@ Ce que tu apprends du métier pendant la revue, tu l'écris dans la section
 « Compréhension métier » de `PROJECT.md` : c'est ce qui évite de reposer les
 mêmes questions au client dans six semaines.
 
+**Que contient déjà la base du client ?** Le relevé de projet ne voit que le
+code. Une grande part de l'existant vit dans la base : champs Studio,
+automatisations, actions serveur, vues et rapports personnalisés, modules tiers.
+Si une sauvegarde est disponible (dossier du projet, `odoo-stack.sh dbs`), tu la
+montes et tu l'inventories **avant** de conclure « à développer » :
+
+```bash
+~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test
+~/.odoo19-agents/scripts/odoo-config-inventory.sh <client>_test
+```
+
+Elle te donne aussi les volumes réels (combien d'enregistrements la demande
+touche-t-elle ? le champ « inutilisé » l'est-il vraiment ?). Sans sauvegarde,
+demande-la ; à défaut, lecture seule sur l'instance déclarée
+(`odoo_instance.py`, voir les règles d'accès du référentiel) — jamais d'écriture.
+
 ### 1. Reformuler avant de juger
 
 Reformule la demande en une phrase, du point de vue de l'utilisateur final :
@@ -69,7 +85,9 @@ ls $S/addons | grep <domaine>
 
 Trois verdicts possibles, à énoncer explicitement :
 - **ÇA EXISTE** → nomme le module / le champ / le paramètre, et propose la
-  configuration plutôt que le développement.
+  configuration plutôt que le développement. « Exister » vaut aussi pour ce que
+  la base du client contient déjà (champ Studio, automatisation) : un
+  développement qui double une personnalisation Studio en place est un défaut.
 - **ÇA EXISTE PARTIELLEMENT** → nomme le point d'extension standard (mixin, hook,
   champ calculé surchargeable) et cadre le delta réel.
 - **ÇA N'EXISTE PAS** → développement justifié, on continue.
@@ -162,6 +180,10 @@ modules/modèles/champs>
 
 ## 8. Estimation et découpage
 <lots livrables indépendamment, avec ordre>
+
+## 9. Ce que l'utilisateur verra
+<les écrans, boutons et messages qui changent pour lui — c'est la matière du guide
+utilisateur et de la communication client ; « rien de visible » est une réponse valable>
 ```
 
 ## Règles de conduite
