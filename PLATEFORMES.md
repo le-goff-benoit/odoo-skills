@@ -173,10 +173,14 @@ un `psql` ou un `ssh` ne s'y applique pas.
 
 ## Ce que l'outillage fait de la plateforme
 
-Rien pour l'instant : aucun script ne détecte l'hébergement. Contrairement à la
-série, qui est résolue par `scripts/odoo_series.py`, la plateforme se lit à la
-main. C'est un manque assumé tant qu'un seul projet du parc est sur Odoo.sh.
-
-Si un second projet Odoo.sh arrive, le premier réflexe à outiller est la lecture
-de `$ODOO_STAGE` avant tout push — c'est le seul point de ce fichier dont
-l'oubli est destructeur.
+- `scripts/odoo-restore.sh` remonte n'importe quelle sauvegarde (zip Odoo.sh ou
+  gestionnaire de bases, `.sql`, `.dump`) dans le stack de la bonne série, dépose le
+  filestore, neutralise (`odoo neutralize`), remet `admin/admin` et liste les modules
+  installés absents du chemin des addons. L'image Postgres du stack embarque pgvector.
+- `scripts/odoo_instance.py` déclare les accès aux instances distantes d'un projet
+  (identifiants hors dépôt), sait télécharger une sauvegarde par `/web/database/backup`
+  (on-premise et Docker uniquement) et **refuse toute écriture sur une instance
+  `production`** sans confirmation explicite.
+- Rien ne lit encore `$ODOO_STAGE` sur Odoo.sh avant un push : c'est le premier
+  réflexe à outiller si un second projet Odoo.sh arrive, car c'est le seul point de ce
+  fichier dont l'oubli est destructeur.

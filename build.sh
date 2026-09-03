@@ -9,6 +9,7 @@
 #   ~/.codex/AGENTS.md                 — aiguillage global Codex
 #   ~/.claude/commands/odoo-feature.md — commande d'enchaînement Claude Code
 #   ~/.codex/skills/odoo-feature/      — commande d'enchaînement Codex
+#   ~/.claude/skills/<nom>/SKILL.md    — skills Claude Code (camptocamp-docs)
 #
 # Relancer après toute modification d'un rôle ou de routing.md : ./build.sh
 
@@ -18,8 +19,9 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_AGENTS="$HOME/.claude/agents"
 CLAUDE_COMMANDS="$HOME/.claude/commands"
 CODEX_SKILLS="$HOME/.codex/skills"
+CLAUDE_SKILLS="$HOME/.claude/skills"
 
-mkdir -p "$CLAUDE_AGENTS" "$CLAUDE_COMMANDS" "$CODEX_SKILLS"
+mkdir -p "$CLAUDE_AGENTS" "$CLAUDE_COMMANDS" "$CODEX_SKILLS" "$CLAUDE_SKILLS"
 
 emit() {
     local slug="$1" role="$2" tools="$3" desc="$4"
@@ -162,3 +164,25 @@ echo "Terminé. Sources partagées :"
 echo "  $HERE/ODOO19_STYLE_GUIDE.md"
 echo "  $HERE/routing.md"
 echo "  $HERE/roles/"
+
+# --- Skills (même contenu pour Claude Code et Codex) -------------------------
+# emit_skill <slug> <role> <description>
+emit_skill() {
+    local slug="$1" role="$2" desc="$3" target
+    for target in "$CLAUDE_SKILLS/$slug/SKILL.md" "$CODEX_SKILLS/$slug/SKILL.md"; do
+        mkdir -p "$(dirname "$target")"
+        {
+            printf -- '---\n'
+            printf 'name: %s\n' "$slug"
+            printf 'description: %s\n' "$desc"
+            printf -- '---\n\n'
+            printf '<!-- Généré par ~/.odoo19-agents/build.sh — ne pas éditer ici.\n'
+            printf '     Source : ~/.odoo19-agents/roles/%s.md -->\n\n' "$role"
+            cat "$HERE/roles/$role.md"
+        } > "$target"
+        echo "  ✓ $target"
+    done
+}
+
+emit_skill "camptocamp-docs" "docs" \
+    "Livrables documentaires Camptocamp pour un client Odoo : guide utilisateur ou de décision (DOCX + PDF à la charte, captures depuis une copie locale restaurée), dossier de changelog d'un lot (README, demande, recette navigateur, communication client). À utiliser dès qu'une intervention doit être documentée, illustrée ou annoncée au client."

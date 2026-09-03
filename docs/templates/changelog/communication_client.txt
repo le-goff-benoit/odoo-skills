@@ -1,0 +1,21 @@
+Bonjour <Prénom>,
+
+<Le bénéfice en une phrase : ce que tu peux faire maintenant, et où (menu, bouton).>
+
+<Le garde-fou en une phrase : ce que le système protège ou signale désormais.>
+
+<Ce que j'ai vérifié, en une phrase, sans jargon : « j'ai rejoué le parcours complet sur
+une copie de la base du <date>, y compris <le cas limite qui comptait pour toi> ».>
+
+<Si une décision reste à prendre : la question, les deux options, ce que je recommande.>
+
+Le guide illustré est joint : <nom du fichier PDF>.
+
+Bonne journée,
+<Prénom>
+
+---
+Règles du gabarit (à retirer) : première personne du singulier, tutoiement si c'est
+l'usage avec ce contact, pas de vocabulaire technique (champ, module, cron, ORM…),
+pas plus de dix lignes, une seule pièce jointe. Aucune affirmation qui n'est pas
+soutenue par la recette.

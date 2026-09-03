@@ -18,7 +18,7 @@ name: odoo-qa-${ODOO_SERIES_SLUG:-19_0}
 
 services:
   db:
-    image: postgres:16
+    image: pgvector/pgvector:pg16   # postgres 16 + pgvector (un dump 19.0 fait CREATE EXTENSION vector)
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo

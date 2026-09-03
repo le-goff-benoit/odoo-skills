@@ -43,7 +43,8 @@ Chaque projet outillé porte un dossier `.odoo-agents/` :
 
 ## Aiguillage — quel agent pour quelle demande
 
-Trois profils existent : `odoo-functional-reviewer`, `odoo-developer`, `odoo-qa-reviewer`.
+Trois profils existent : `odoo-functional-reviewer`, `odoo-developer`, `odoo-qa-reviewer`,
+plus le skill `camptocamp-docs` pour les livrables documentaires.
 Le choix ne se discute pas, il découle de la nature de la demande :
 
 | Nature de la demande | Réponse attendue |
@@ -52,6 +53,7 @@ Le choix ne se discute pas, il découle de la nature de la demande :
 | **Développement** — créer, modifier, corriger, étendre du code (module, modèle, champ, vue, rapport, wizard, correctif de bug) | **La chaîne complète, automatiquement** : `odoo-functional-reviewer` → `odoo-developer` → `odoo-qa-reviewer`. C'est ce que fait `/odoo-feature`. |
 | **Validation seule** — « relis », « valide », « teste », « ce module est-il propre ? » | **`odoo-qa-reviewer` seul.** |
 | **Amélioration du dispositif** — « qu'est-ce qu'on a appris », « le guide est-il à jour », « fais un retex » | **`/odoo-retex`.** Relit les journaux, vérifie le référentiel contre les sources, promeut les leçons. |
+| **Documentation & livraison** — guide utilisateur, guide de décision, changelog d'un lot, recette, communication client, captures d'écran | **Skill `camptocamp-docs`.** Copie locale du client restaurée, captures réelles, DOCX + PDF à la charte Camptocamp. |
 
 Règles d'application :
 
@@ -65,3 +67,48 @@ Règles d'application :
 - Toute intervention de la chaîne se termine par une entrée dans le `JOURNAL.md`
   du projet. Ce qui n'est pas écrit sera redécouvert au prix fort.
 - Hors Odoo, cet aiguillage ne s'applique pas.
+
+## Données réelles : sauvegarde d'abord, base distante ensuite
+
+Quand une tâche a besoin des données du client (reproduire un défaut, capturer des
+écrans, reprendre des données, chiffrer une migration), la voie normale est une
+**copie locale** : sauvegarde fournie par le client ou téléchargée, puis
+
+```bash
+~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test
+```
+
+La base est neutralisée (mails, crons, paiements coupés, bandeau), `admin/admin`, et
+tout y est permis.
+
+Si aucune sauvegarde n'est disponible, ou qu'il faut lire une base distante, **guide
+l'utilisateur** pour déclarer l'accès plutôt que de coller des identifiants dans la
+conversation :
+
+```bash
+~/.odoo19-agents/scripts/odoo_instance.py add <projet>     # questions une à une, saisie masquée
+~/.odoo19-agents/scripts/odoo_instance.py check <projet> <nom>
+```
+
+Les identifiants sont stockés dans `~/.odoo-agents/instances/<projet>.json` (mode 600,
+hors de tout dépôt). Recommande une **clé API** (Préférences → Sécurité du compte)
+plutôt qu'un mot de passe, et un compte en lecture seule pour la production.
+
+**Production** — règles absolues, rappelées à l'utilisateur avant la première connexion :
+
+- annonce l'avertissement en clair : *« Vous me donnez accès à la PRODUCTION de <client>.
+  Je n'y ferai que de la lecture. Toute écriture vous sera demandée explicitement,
+  opération par opération. »* ;
+- lecture seule par défaut : `odoo_instance.py` refuse `create`, `write`, `unlink` et
+  toute méthode d'action sur une instance `production` ;
+- une écriture en production n'est possible qu'après **confirmation explicite de
+  l'humain pour cette opération précise** (modèle, enregistrements, valeurs), puis
+  `--allow-write` et `ODOO_PRODUCTION_CONFIRMED=<nom>` sur la commande. Jamais en lot,
+  jamais « pendant qu'on y est » ;
+- aucun test, aucune capture d'écran, aucune reprise de données en production : ça se
+  fait sur la copie locale ;
+- ne jamais afficher, journaliser ni commiter un identifiant ; `odoo_instance.py list`
+  ne montre pas les secrets.
+
+Staging et test : écriture permise, mais annonce ce que tu vas modifier et nettoie
+derrière toi.

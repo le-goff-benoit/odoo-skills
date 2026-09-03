@@ -50,6 +50,7 @@ remonte des anomalies fausses. La série n'est jamais supposée.
 | `odoo-functional-reviewer` | Analyste fonctionnel **contradicteur** | avant de coder : reformule la demande, vérifie si le standard 19.0 couvre déjà le besoin, remonte les contradictions et les non-dits, pose les questions bloquantes, produit la spec et les critères d'acceptation |
 | `odoo-developer` | Développeur | écrit le code du module dans la ligne éditoriale Odoo 19, livre les tests avec, passe le lint |
 | `odoo-qa-reviewer` | Relecteur & QA | valide : lint statique, puis installation / mise à jour / tests sur un Odoo 19 local Docker, puis parcours e2e (tours Chrome) |
+| `camptocamp-docs` (skill) | Documentation | guide utilisateur / de décision DOCX + PDF à la charte, dossier de changelog, recette, communication client — captures depuis une copie locale restaurée |
 
 ## Aiguillage automatique
 
@@ -62,6 +63,7 @@ même règle dans les deux outils :
 | **Développement** | les **trois en chaîne**, automatiquement — c'est `/odoo-feature` |
 | **Validation seule** (« relis », « teste ») | `odoo-qa-reviewer` **seul** |
 | **Amélioration du dispositif** (« qu'a-t-on appris », « le guide est-il à jour ») | `/odoo-retex` |
+| **Documentation & livraison** (guide, changelog, recette, communication) | skill `camptocamp-docs` |
 
 La chaîne ne s'arrête qu'en trois cas : le standard couvre déjà le besoin, une question
 bloquante subsiste, ou la QA reste rouge après deux reprises.
@@ -100,7 +102,12 @@ bloquante subsiste, ou la QA reste rouge après deux reprises.
 │   ├── implementation.md
 │   ├── qa-review.md
 │   ├── orchestration.md    ← la chaîne /odoo-feature
-│   └── retex.md            ← /odoo-retex, l'amélioration continue
+│   ├── retex.md            ← /odoo-retex, l'amélioration continue
+│   └── docs.md             ← skill camptocamp-docs
+├── docs/                   ← livrables documentaires
+│   ├── c2c_docx.py         (charte Camptocamp : Brand, Guide, DOCX → PDF, relecture)
+│   ├── assets/             (logos Camptocamp)
+│   └── templates/          (changelog/*.md, generate_guide.py, capture_guide.py)
 ├── stack/                  ← Odoo local pour la QA, une image par série
 │   ├── docker-compose.yml
 │   ├── Dockerfile          (odoo:<série> + google-chrome + websocket-client + ruff)
@@ -175,10 +182,23 @@ scripts/odoo-test.sh mon_module --tags /mon_module:TestMaClasse.test_x
 # Lint restreint aux fichiers modifiés (module historique porteur de dette)
 scripts/odoo-lint.sh --changed [<ref-git>] /chemin/vers/mon_module
 
+# Remonter une sauvegarde client (zip Odoo.sh / gestionnaire de bases, .sql, .dump),
+# neutralisée, admin/admin, série déduite du dump
+scripts/odoo-restore.sh ~/Downloads/client-2026-08-19.zip --db client_test
+scripts/odoo-stack.sh dbs
+
+# Accès déclaré à une base distante (identifiants hors dépôt, production en lecture seule)
+scripts/odoo_instance.py add mon_projet
+scripts/odoo_instance.py check mon_projet staging
+scripts/odoo_instance.py backup mon_projet staging --out client.zip   # on-premise / Docker
+
 # Captures d'écran authentifiées
 scripts/odoo-shot.sh /odoo/sales --out liste.png
 scripts/odoo-shot.sh "/odoo/action-mod.action_x/3" --wait ".o_form_view" --full
 scripts/odoo-shot.sh /my/orders --login portal --password portal --wait body
+
+# Captures pour la documentation (Playwright sur le poste : recadrage, 2x, langue du client)
+scripts/odoo_capture.py /odoo/project --db client_test --lang fr_FR --clip .o_form_view --out 01.png
 
 # Rapport QWeb en PDF réel (+ HTML source pour diagnostic)
 scripts/odoo-pdf.sh sale.action_report_saleorder 12 --out devis.pdf --html

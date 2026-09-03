@@ -14,6 +14,8 @@
 #   odoo-stack.sh psql [db]       psql sur la base (défaut $ODOO_TEST_DB)
 #   odoo-stack.sh odoo-shell [db] shell Odoo (env, self, ...) sur la base
 #   odoo-stack.sh status          état des services + URL
+#   odoo-stack.sh dbs             bases présentes sur le stack de la série
+#   odoo-stack.sh restore <zip>   remonte une sauvegarde client (→ odoo-restore.sh --help)
 #
 # Variables : ODOO_SERIES, ODOO_ADDONS_DIR, ODOO_HTTP_PORT, ODOO_DB_PORT, ODOO_TEST_DB
 # (voir stack/.env.example)
@@ -61,6 +63,11 @@ case "${1:-status}" in
         compose run --rm odoo odoo shell \
             -c /etc/odoo/odoo.conf -d "${2:-$DB}" --no-http
         ;;
+    dbs)
+        docker compose exec -T db psql -U odoo -d postgres -Atc \
+            "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> 'postgres' ORDER BY 1" ;;
+    restore)
+        exec "$(dirname "${BASH_SOURCE[0]}")/odoo-restore.sh" "$@" ;;
     status)
         compose ps
         echo
