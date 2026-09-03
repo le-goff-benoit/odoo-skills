@@ -1,0 +1,73 @@
+# Stack Odoo local, dédiée à la QA des modules custom.
+#
+# La série est portée par ODOO_SERIES : chaque série a son projet compose, son
+# image, ses volumes et sa base. Deux séries peuvent donc coexister sans se
+# marcher dessus (ports différents à régler dans .env).
+#
+# Les sources sont montées en LECTURE SEULE : la QA ne modifie jamais
+# ~/odoo-sources. Seul le répertoire d'addons custom est monté en écriture
+# (nécessaire pour que le conteneur puisse écrire les .pyc et les captures de tours).
+#
+# Variables (fichier .env à côté de ce compose, ou export) :
+#   ODOO_SERIES      série Odoo cible (18.0, 19.0, 19.4… ; défaut 19.0)
+#   ODOO_ADDONS_DIR  répertoire contenant le(s) module(s) custom à tester
+#   ODOO_HTTP_PORT   port HTTP exposé sur l'hôte (défaut 8079)
+#   ODOO_DB_PORT     port PostgreSQL exposé sur l'hôte (défaut 5439)
+
+name: odoo-qa-${ODOO_SERIES_SLUG:-19_0}
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+      - -c
+      - work_mem=64MB
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${ODOO_DB_PORT:-5439}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  odoo:
+    build:
+      context: .
+      args:
+        ODOO_SERIES: ${ODOO_SERIES:-19.0}
+    image: odoo-qa:${ODOO_SERIES:-19.0}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
+    volumes:
+      - ${ODOO_ENTERPRISE_DIR:-~/odoo-sources/19.0-enterprise}:/mnt/enterprise-addons:ro
+      - ${ODOO_ADDONS_DIR:?définir ODOO_ADDONS_DIR dans stack/.env}:/mnt/extra-addons
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      - odoo-filestore:/var/lib/odoo
+      - ./artifacts:/mnt/artifacts
+    ports:
+      - "${ODOO_HTTP_PORT:-8079}:8069"
+      - "${ODOO_GEVENT_PORT:-8082}:8072"
+    # Les tours lancent chromium : lui laisser de la mémoire partagée.
+    shm_size: 2gb
+
+volumes:
+  pgdata:
+  odoo-filestore:

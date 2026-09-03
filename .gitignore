@@ -1,0 +1,7 @@
+# Produits de la QA (logs, captures, PDF) : données clients, jamais versionnées
+stack/artifacts/*
+!stack/artifacts/.gitkeep
+# Configuration locale du stack
+stack/.env
+__pycache__/
+*.pyc
