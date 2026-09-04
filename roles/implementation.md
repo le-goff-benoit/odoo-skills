@@ -155,7 +155,7 @@ Tu ne considères pas une fonctionnalité livrée sans test. Minimum :
    joue à la clôture de la release :
    ```bash
    export ODOO_ADDONS_DIR=<répertoire contenant le module>
-   ~/.odoo19-agents/scripts/odoo-test.sh <module> --update --tags /<module>:<TestClasse>
+   ~/.odoo19-agents/scripts/odoo-test.sh <module> --quick --tags /<module>:<TestClasse>
    ```
    Le script termine par une ligne `RECETTE …` : lis-la, pas le log entier.
    Une demande qui touche aux droits, à la compta, à la facturation ou aux

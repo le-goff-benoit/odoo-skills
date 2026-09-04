@@ -324,6 +324,14 @@ def main(argv: list[str]) -> int:
         )
         print(f"  ✓ {config}  (series = {detected})")
 
+    inbox = root / "inbox"
+    if not inbox.is_dir():
+        inbox.mkdir()
+        (inbox / ".gitignore").write_text("# Dépôt pour l'humain : sauvegardes (.zip/.dump/.sql) et mails (.eml)\n"
+                                          "# à l'attention des agents. Jamais versionné.\n*\n!.gitignore\n",
+                                          encoding="utf-8")
+        print(f"  ✓ {inbox}/  (dépôt de sauvegardes et de mails, ignoré par git)")
+
     journal = home / "JOURNAL.md"
     if not journal.exists():
         journal.write_text(

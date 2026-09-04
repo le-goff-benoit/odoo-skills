@@ -102,12 +102,38 @@ Le stack vit dans `~/.odoo19-agents/stack/`, **dans la série du module**
 (image `odoo-qa:<série>`, base par module `odoo_qa_<série>_<module>`). Ne
 coupe jamais un service que tu n'as pas démarré : d'autres projets s'en servent.
 
-**QA de tâche** :
+**QA de tâche** — un seul chargement d'Odoo, base par module gardée chaude
+d'une tâche à l'autre (installation si elle n'existe pas, mise à jour sinon,
+tests ciblés dans le même passage) :
 
 ```bash
 export ODOO_ADDONS_DIR=<répertoire contenant le module>
-~/.odoo19-agents/scripts/odoo-test.sh <module> --update --tags /<module>:<TestClasse>
+~/.odoo19-agents/scripts/odoo-test.sh <module> --quick --tags /<module>:<TestClasse>
 ```
+
+**Point de contrôle** — la suite complète du module, base chaude, sans tours
+(`odoo-test.sh <module> --quick`, deux à cinq minutes). Pas systématique : tu
+le déclenches quand **l'un** de ces cas se présente, et tu le dis dans la ligne
+d'état :
+
+- le diff touche un fichier déjà modifié par un autre point de la release
+  (`odoo-release.sh changed` le montre) ;
+- un modèle partagé est concerné : `sale.order`, `account.move`,
+  `stock.picking`, `project.task`, `res.partner`, ou tout modèle étendu par
+  plusieurs fichiers du module ;
+- c'est le troisième point de la release depuis le dernier contrôle ;
+- la tâche est sensible (droits, compta, facturation, données existantes) —
+  là, c'est la recette sur la copie du client, pas seulement la suite.
+
+Sur Claude Code, lance-le **en arrière-plan** (`run_in_background`) et
+enchaîne : son résultat se lit au début de la tâche suivante, ou à la clôture.
+Sur Codex, lance-le avant de rendre la main. Un point de contrôle rouge sur un
+test qui ne concerne pas la tâche va dans « Réserves » avec la preuve, pas
+dans les anomalies de la tâche.
+
+**Durées** — chaque étape d'`odoo-test.sh` affiche son temps (`⏱`) et la ligne
+`RECETTE` les récapitule : annonce une durée réelle dans tes lignes d'état,
+pas « quelques minutes ».
 
 **QA de release** — une commande, tout le protocole, un tableau en sortie :
 
@@ -116,8 +142,11 @@ export ODOO_ADDONS_DIR=<répertoire contenant le module>
 ```
 
 Elle enchaîne lint `--changed` depuis l'ouverture de la release, base neuve
-(installation, `-u`, **suite complète** du module tours compris,
-désinstallation), mise à niveau sur la copie du client, et écrit
+(clonée en quelques secondes depuis une base **gabarit** par module où les
+dépendances standard sont préinstallées ; le gabarit se reconstruit quand la
+liste des dépendances du manifest change ; `--no-template` force une
+installation intégrale), installation, `-u`, **suite complète** du module tours
+compris, désinstallation, mise à niveau sur la copie du client, et écrit
 `changelog/<release>/recette.md`. Elle signale un module sans test, une version de
 manifest qui n'a pas bougé, et tout ce qui n'a pas été exécuté.
 

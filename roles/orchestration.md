@@ -79,6 +79,13 @@ sont des preuves à lire (`Read` sur le PNG) ; les documents du client
 décision de l'humain. Tant que la release n'est pas ouverte, lis le mail sans
 `--release` ; le versement se fait à l'ouverture.
 
+Regarde **`inbox/`** : c'est là que l'humain dépose ce qu'il veut te confier —
+une sauvegarde (`.zip`, `.dump`, `.sql`) ou des mails (`.eml`). Le briefing en
+liste le contenu avec la commande qui va avec. Une sauvegarde plus récente que
+la copie restaurée se restaure avant de continuer
+(`odoo-restore.sh inbox/<fichier> --db <client>_test --force`, deux à dix
+minutes selon la taille — annonce-le). Le dossier est ignoré par git.
+
 Cherche aussi une **copie du client** (le briefing liste les bases du stack et
 les instances déclarées). Elle sert aux trois étapes. Si elle manque et que la
 demande touche des données existantes, demande-la à l'utilisateur dès
@@ -152,8 +159,13 @@ tests ciblés de la tâche.
 
 ```bash
 export ODOO_ADDONS_DIR=<répertoire contenant le module>
-~/.odoo19-agents/scripts/odoo-test.sh <module> --update --tags /<module>:<TestClasse>
+~/.odoo19-agents/scripts/odoo-test.sh <module> --quick --tags /<module>:<TestClasse>   # un seul chargement
 ```
+
+Le testeur décide en plus d'un **point de contrôle** (suite complète du module,
+base chaude) quand le diff croise un autre point de la release, touche un
+modèle partagé, ou tous les trois points — en arrière-plan sur Claude, lu à la
+tâche suivante. Les durées affichées (`⏱`) alimentent tes lignes d'état.
 
 Le QA écrit son verdict dans `$RELEASE/qa.md` (une section datée par tâche) et
 vérifie explicitement chaque critère d'acceptation de la spec. Il marque le

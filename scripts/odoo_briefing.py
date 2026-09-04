@@ -205,6 +205,30 @@ def deployed_versions(root: Path, modules: list[str]) -> list[str]:
     return out
 
 
+def inbox_status(root: Path) -> str:
+    """Ce que l'humain a déposé dans <projet>/inbox/ : sauvegardes et mails, du plus récent au plus ancien."""
+    inbox = root / "inbox"
+    if not inbox.is_dir():
+        return ""
+    files = sorted((p for p in inbox.iterdir() if p.is_file() and not p.name.startswith(".")),
+                   key=lambda p: p.stat().st_mtime, reverse=True)
+    if not files:
+        return "vide"
+    import datetime
+    out = []
+    for p in files[:8]:
+        when = datetime.datetime.fromtimestamp(p.stat().st_mtime).strftime("%d.%m %H:%M")
+        size = p.stat().st_size
+        kind = ("sauvegarde → `odoo-restore.sh inbox/%s --db <client>_test --force`" % p.name
+                if p.suffix.lower() in (".zip", ".dump", ".sql") else
+                "mail → `odoo_mail.py inbox/%s --release <release>`" % p.name
+                if p.suffix.lower() == ".eml" else "fichier")
+        out.append(f"`{p.name}` ({size // (1 << 20)} Mo, déposé le {when}) — {kind}")
+    if len(files) > 8:
+        out.append(f"… +{len(files) - 8}")
+    return "\n  - " + "\n  - ".join(out)
+
+
 def restored_dbs(series: str) -> str:
     """Bases présentes sur le stack de la série (sans démarrer quoi que ce soit)."""
     names = run(["docker", "ps", "--format", "{{.Names}}"], timeout=5).splitlines()
@@ -261,6 +285,9 @@ def main(argv: list[str]) -> int:
     dbs = restored_dbs(series)
     if dbs:
         out.append(f"- **Bases sur le stack {series}** : {dbs}")
+    inbox = inbox_status(root)
+    if inbox:
+        out.append(f"- **Inbox** (`inbox/`, déposé par l'humain) : {inbox}")
     project_md = agents / "PROJECT.md"
     modules = re.findall(r"^### `([^`]+)`", project_md.read_text(encoding="utf-8", errors="replace"), re.M) \
         if project_md.is_file() else []

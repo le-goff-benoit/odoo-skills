@@ -55,6 +55,10 @@ case "$cmd" in
         NN=$(( ${#existing[@]} + 1 ))
         RELEASE="$ROOT/changelog/${DAY}_$(printf '%02d' "$NN")_$(slugify "$TITLE")"
         mkdir -p "$RELEASE/captures"
+        if [ ! -d "$ROOT/inbox" ]; then
+            mkdir -p "$ROOT/inbox"
+            printf '# Dépôt pour l'"'"'humain : sauvegardes (.zip/.dump/.sql) et mails (.eml)\n# à l'"'"'attention des agents. Jamais versionné.\n*\n!.gitignore\n' > "$ROOT/inbox/.gitignore"
+        fi
         git -C "$ROOT" rev-parse HEAD 2>/dev/null > "$RELEASE/.base" || echo "sans-git" > "$RELEASE/.base"
         LABEL="$(sed -n 's/^ *lot_label *[=:] *\([^ ]*\).*/\1/p' "$ROOT/.odoo-agents/config" 2>/dev/null | head -1)"
         LABEL="${LABEL:-release}"

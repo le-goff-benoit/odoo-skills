@@ -115,11 +115,13 @@ TEST_OUT="$STACK/artifacts/recette-$MODULE-$STAMP-test.out"
 TEST_RC=${PIPESTATUS[0]}
 TEST_LOG="$(sed -n 's/^Log complet *: *//p' "$TEST_OUT" | tail -1)"
 TEST_DB="$(sed -n 's/^RECETTE .*db=\([^ ]*\).*/\1/p' "$TEST_OUT" | tail -1)"
+RECETTE_LINE="$(grep "^RECETTE " "$TEST_OUT" | tail -1)"
+dur() { printf '%s' "$RECETTE_LINE" | grep -oE "\b$1=[0-9]+s" | cut -d= -f2; }
 
 mark() { grep -q "$1" "$TEST_OUT" && echo "✅" || echo "❌"; }
-if grep -q "✅ installation OK" "$TEST_OUT"; then row "Installation base neuve" "✅" "";
+if grep -q "✅ installation OK" "$TEST_OUT"; then row "Installation base neuve" "✅" "$(dur base) gabarit + $(dur install)";
 else row "Installation base neuve" "❌" "voir $TEST_LOG"; STATUS=1; fi
-if grep -q "✅ mise à jour OK" "$TEST_OUT"; then row "Mise à jour (-u)" "✅" "";
+if grep -q "✅ mise à jour OK" "$TEST_OUT"; then row "Mise à jour (-u)" "✅" "$(dur update)";
 elif grep -q "mise à jour" "$TEST_OUT"; then row "Mise à jour (-u)" "❌" "voir $TEST_LOG"; STATUS=1;
 else row "Mise à jour (-u)" "— non exécutée" ""; fi
 RESULT_LINE="$(grep -h "odoo.tests.result:" "$TEST_LOG" 2>/dev/null | tail -1 | sed 's/.*odoo.tests.result: //; s/ when loading.*//')"
@@ -129,7 +131,7 @@ if grep -q "✅ tests OK" "$TEST_OUT"; then
     if echo "$RESULT_LINE" | grep -qE "of 0 tests"; then
         row "Tests Python" "⚠️ aucun test" "le module ne déclare aucun test : à écrire"; STATUS=1
     else
-        row "Tests Python (suite complète)" "✅" "${RESULT_LINE:-?}${STATS_LINE:+ — $STATS_LINE}"
+        row "Tests Python (suite complète)" "✅" "${RESULT_LINE:-?}${STATS_LINE:+ — $STATS_LINE} · $(dur tests)"
     fi
 elif grep -q "Tests (" "$TEST_OUT"; then
     row "Tests Python (suite complète)" "❌" "${RESULT_LINE:-voir $TEST_LOG}"; STATUS=1
@@ -140,7 +142,7 @@ if [ "${TOURS:-0}" -gt 0 ]; then row "Tours navigateur (Chrome headless)" "✅" 
 elif grep -rqs "start_tour" "$MODULE_DIR/tests" 2>/dev/null; then row "Tours navigateur" "❌" "start_tour présent, aucun « tour succeeded » dans le log"; STATUS=1;
 else row "Tours navigateur" "n.a." "aucun tour dans le module"; fi
 if [ "$UNINSTALL" -eq 1 ]; then
-    if grep -q "✅ désinstallation OK" "$TEST_OUT"; then row "Désinstallation" "✅" "";
+    if grep -q "✅ désinstallation OK" "$TEST_OUT"; then row "Désinstallation" "✅" "$(dur uninstall)";
     else row "Désinstallation" "❌" "voir $TEST_LOG"; STATUS=1; fi
 fi
 ERR="$(sed -n 's/^ERROR\/CRITICAL *: *//p' "$TEST_OUT" | tail -1)"
@@ -197,7 +199,7 @@ fi
         echo '```'
         echo
     fi
-    echo "Verdict outillé : $([ "$STATUS" -eq 0 ] && echo "✅ tout est vert" || echo "❌ au moins un contrôle rouge ou non exécuté")"
+    echo "Verdict outillé : $([ "$STATUS" -eq 0 ] && echo "✅ tout est vert" || echo "❌ au moins un contrôle rouge ou non exécuté") · durée totale du protocole base neuve : $(dur total)"
     echo
     echo "Logs : \`$LINT_LOG\`, \`${TEST_LOG:-?}\`$([ -n "$CLIENT_DB" ] && echo ", \`$CLIENT_LOG\`")"
 } > "$SUMMARY"

@@ -4,7 +4,13 @@
 #   odoo-test.sh <module> [options]
 #
 # Options :
-#   --fresh          repart d'une base neuve (drop + create) — recommandé
+#   --fresh          repart d'une base neuve — clonée depuis une base GABARIT par
+#                    module (dépendances standard préinstallées, reconstruite quand la
+#                    liste des dépendances change) : quelques secondes au lieu de minutes
+#   --no-template    --fresh sans gabarit : installation intégrale des dépendances
+#   --rebuild-template  reconstruit le gabarit avant de s'en servir
+#   --quick          QA de tâche : UN seul passage (-i si la base n'existe pas, sinon -u)
+#                    avec les tests ciblés — pas d'étape install/update séparée
 #   --update         teste aussi la mise à jour (-u) sur la base existante
 #   --uninstall      teste la désinstallation à la fin
 #   --tags <spec>    passe --test-tags (défaut : /<module>)
@@ -43,7 +49,7 @@ else
     export ODOO_TEST_DB="$DB"
 fi
 
-FRESH=0; UPDATE=0; UNINSTALL=0; KEEP=0
+FRESH=0; UPDATE=0; UNINSTALL=0; KEEP=0; QUICK=0; TEMPLATE=1; REBUILD_TPL=0
 INSTALL_OK=ko; UPDATE_OK=n.a.; UNINSTALL_OK=n.a.
 TAGS="/$MODULE"
 while [ $# -gt 0 ]; do
@@ -52,6 +58,9 @@ while [ $# -gt 0 ]; do
         --update)    UPDATE=1 ;;
         --uninstall) UNINSTALL=1 ;;
         --keep)      KEEP=1 ;;
+        --quick)     QUICK=1 ;;
+        --no-template) TEMPLATE=0 ;;
+        --rebuild-template) REBUILD_TPL=1 ;;
         --tours)     TAGS="/$MODULE:HttpCase" ;;
         --tags)      shift; TAGS="$1" ;;
         *) echo "option inconnue : $1" >&2; exit 2 ;;
@@ -69,6 +78,13 @@ STATUS=0
 compose() { docker compose "$@"; }
 
 step() { echo; echo "══ $* ═══════════════════════════════════════════════════"; }
+T_STEP=0
+tic() { T_STEP=$(date +%s); }
+toc() { local d=$(( $(date +%s) - T_STEP )); echo "   ⏱ ${d}s"; DURATIONS="${DURATIONS:+$DURATIONS }$1=${d}s"; }
+DURATIONS=""
+T_ALL=$(date +%s)
+psql_q() { compose exec -T db psql -U odoo -d postgres -Atc "$1"; }
+db_exists() { [ "$(psql_q "SELECT 1 FROM pg_database WHERE datname='$1'")" = "1" ]; }
 
 # Odoo tourne en one-shot (--stop-after-init) : pas besoin du service long.
 run_odoo() {
@@ -86,53 +102,138 @@ compose up -d db
 compose exec -T db bash -c 'for i in $(seq 1 30); do pg_isready -U odoo -q && exit 0; sleep 1; done; exit 1' \
     || { echo "❌ PostgreSQL indisponible"; exit 1; }
 
+# Gabarit : une base par module avec les dépendances STANDARD préinstallées.
+# Les dépendances custom (présentes dans ODOO_ADDONS_DIR) n'y sont pas : leur code
+# bouge avec la release, elles s'installent avec le module.
+TPL="odoo_qa_${ODOO_SERIES_SLUG}_tpl_$(printf '%s' "$MODULE" | tr -c 'a-z0-9_\n' '_' | cut -c1-36)"
+tpl_info() {   # → "<hash> <deps standard séparées par des virgules>"
+    python3 - "$ODOO_ADDONS_DIR" "$MODULE" "$ODOO_SERIES" <<'PY'
+import ast, hashlib, os, sys
+addons, module, series = sys.argv[1], sys.argv[2], sys.argv[3]
+path = os.path.join(addons, module, "__manifest__.py")
+if not os.path.isfile(path):
+    for root, dirs, files in os.walk(addons):
+        if os.path.basename(root) == module and "__manifest__.py" in files:
+            path = os.path.join(root, "__manifest__.py"); break
+try:
+    deps = ast.literal_eval(open(path).read()).get("depends", [])
+except Exception:
+    deps = []
+def is_custom(d):
+    for root, dirs, files in os.walk(addons):
+        if os.path.basename(root) == d and "__manifest__.py" in files:
+            return True
+        dirs[:] = [x for x in dirs if not x.startswith(".") and x not in ("node_modules", "changelog")]
+    return False
+std = sorted(d for d in deps if d != "base" and not is_custom(d))
+print(hashlib.sha1((series + ":" + ",".join(std)).encode()).hexdigest()[:12], ",".join(std))
+PY
+}
+
 if [ "$FRESH" -eq 1 ]; then
-    step "0b. Base neuve : drop + create $DB"
-    compose exec -T db dropdb -U odoo --if-exists "$DB"
-    compose exec -T db createdb -U odoo "$DB"
-fi
-
-step "1. Installation de $MODULE sur $DB"
-# Odoo IGNORE un module absent du chemin des addons avec un simple WARNING et
-# sort en 0 : « invalid module names, ignored ». Ce faux vert est traité comme
-# un échec, sinon toute la recette valide du vide.
-if run_odoo -c "$CONF" -d "$DB" -i "$MODULE" --stop-after-init --without-demo=all \
-        && ! grep -q "invalid module names, ignored: .*\b$MODULE\b" "$LOG"; then
-    echo "✅ installation OK"; INSTALL_OK=ok
-elif grep -q "invalid module names, ignored: .*\b$MODULE\b" "$LOG"; then
-    echo "❌ $MODULE est INTROUVABLE dans le chemin des addons du conteneur (ODOO_ADDONS_DIR=${ODOO_ADDONS_DIR:-?})"
-    echo "   ou illisible par l'utilisateur odoo (uid 101) — arrêt"
-    STATUS=1
-else
-    echo "❌ installation en échec — arrêt"
-    STATUS=1
-fi
-
-if [ "$STATUS" -eq 0 ] && [ "$UPDATE" -eq 1 ]; then
-    step "2. Mise à jour (-u $MODULE)"
-    if run_odoo -c "$CONF" -d "$DB" -u "$MODULE" --stop-after-init; then
-        echo "✅ mise à jour OK"; UPDATE_OK=ok
+    tic
+    read -r TPL_HASH TPL_DEPS < <(tpl_info)
+    if [ "$TEMPLATE" -eq 1 ] && [ -n "${TPL_DEPS:-}" ]; then
+        CUR_HASH="$(psql_q "SELECT d.description FROM pg_shdescription d JOIN pg_database db ON db.oid=d.objoid WHERE db.datname='$TPL'")"
+        if [ "$REBUILD_TPL" -eq 1 ] || [ "$CUR_HASH" != "deps=$TPL_HASH" ]; then
+            step "0a. Gabarit $TPL : installation des dépendances standard ($TPL_DEPS)"
+            [ -n "$CUR_HASH" ] && echo "   (gabarit périmé : dépendances modifiées)"
+            compose exec -T db dropdb -U odoo --if-exists "$TPL"
+            compose exec -T db createdb -U odoo "$TPL"
+            if run_odoo -c "$CONF" -d "$TPL" -i "$TPL_DEPS" --stop-after-init --without-demo=all; then
+                psql_q "COMMENT ON DATABASE \"$TPL\" IS 'deps=$TPL_HASH'" >/dev/null
+                echo "✅ gabarit prêt"
+            else
+                echo "❌ gabarit en échec — repli sur une installation intégrale"
+                compose exec -T db dropdb -U odoo --if-exists "$TPL"; TEMPLATE=0
+            fi
+        else
+            echo "Gabarit $TPL à jour (deps=$TPL_HASH)"
+        fi
     else
-        echo "❌ la mise à jour casse — c'est ce qui échouera en production"
+        TEMPLATE=0
+    fi
+    step "0b. Base neuve : $DB$([ "$TEMPLATE" -eq 1 ] && echo " (clone du gabarit)")"
+    psql_q "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname IN ('$DB','$TPL') AND pid <> pg_backend_pid()" >/dev/null
+    compose exec -T db dropdb -U odoo --if-exists "$DB"
+    if [ "$TEMPLATE" -eq 1 ]; then
+        compose exec -T db createdb -U odoo -T "$TPL" "$DB"
+        compose exec -T -u root odoo sh -c "rm -rf /var/lib/odoo/filestore/$DB && cp -r /var/lib/odoo/filestore/$TPL /var/lib/odoo/filestore/$DB 2>/dev/null; chown -R odoo:odoo /var/lib/odoo/filestore/$DB 2>/dev/null" || true
+    else
+        compose exec -T db createdb -U odoo "$DB"
+    fi
+    toc base
+fi
+
+ignored() { grep -q "invalid module names, ignored: .*\b$MODULE\b" "$LOG"; }
+
+if [ "$QUICK" -eq 1 ]; then
+    # Un seul chargement : installation si la base n'existe pas, mise à jour sinon,
+    # tests ciblés dans le même passage.
+    tic
+    if db_exists "$DB"; then MODE=-u; step "1. QA de tâche : -u $MODULE + tests ($TAGS) sur $DB"
+    else compose exec -T db createdb -U odoo "$DB"; MODE=-i; step "1. QA de tâche : -i $MODULE + tests ($TAGS) sur $DB (base neuve)"; fi
+    if run_odoo -c "$CONF" -d "$DB" $MODE "$MODULE" --test-enable --test-tags "$TAGS" \
+            --log-level=test --stop-after-init --without-demo=all --screenshots=/mnt/artifacts \
+            && ! ignored; then
+        echo "✅ $MODE + tests OK"; INSTALL_OK=ok; [ "$MODE" = -u ] && UPDATE_OK=ok
+    elif ignored; then
+        echo "❌ $MODULE est INTROUVABLE dans le chemin des addons du conteneur (ODOO_ADDONS_DIR=${ODOO_ADDONS_DIR:-?}) ou illisible par l'uid 101"
+        STATUS=1
+    else
+        echo "❌ échec (installation, mise à jour ou tests) — voir les extraits ci-dessous"
         STATUS=1
     fi
-fi
-
-if [ "$STATUS" -eq 0 ]; then
-    step "3. Tests (--test-tags $TAGS)"
-    if run_odoo -c "$CONF" -d "$DB" -u "$MODULE" \
-            --test-enable --test-tags "$TAGS" \
-            --log-level=test --stop-after-init \
-            --screenshots=/mnt/artifacts; then
-        echo "✅ tests OK"
-    else
-        echo "❌ tests en échec"
+    toc quick
+else
+    step "1. Installation de $MODULE sur $DB"
+    tic
+    # Odoo IGNORE un module absent du chemin des addons avec un simple WARNING et
+    # sort en 0 : « invalid module names, ignored ». Ce faux vert est traité comme
+    # un échec, sinon toute la recette valide du vide.
+    if run_odoo -c "$CONF" -d "$DB" -i "$MODULE" --stop-after-init --without-demo=all && ! ignored; then
+        echo "✅ installation OK"; INSTALL_OK=ok
+    elif ignored; then
+        echo "❌ $MODULE est INTROUVABLE dans le chemin des addons du conteneur (ODOO_ADDONS_DIR=${ODOO_ADDONS_DIR:-?})"
+        echo "   ou illisible par l'utilisateur odoo (uid 101) — arrêt"
         STATUS=1
+    else
+        echo "❌ installation en échec — arrêt"
+        STATUS=1
+    fi
+    toc install
+
+    if [ "$STATUS" -eq 0 ] && [ "$UPDATE" -eq 1 ]; then
+        step "2. Mise à jour (-u $MODULE)"
+        tic
+        if run_odoo -c "$CONF" -d "$DB" -u "$MODULE" --stop-after-init; then
+            echo "✅ mise à jour OK"; UPDATE_OK=ok
+        else
+            echo "❌ la mise à jour casse — c'est ce qui échouera en production"
+            STATUS=1
+        fi
+        toc update
+    fi
+
+    if [ "$STATUS" -eq 0 ]; then
+        step "3. Tests (--test-tags $TAGS)"
+        tic
+        if run_odoo -c "$CONF" -d "$DB" -u "$MODULE" \
+                --test-enable --test-tags "$TAGS" \
+                --log-level=test --stop-after-init \
+                --screenshots=/mnt/artifacts; then
+            echo "✅ tests OK"
+        else
+            echo "❌ tests en échec"
+            STATUS=1
+        fi
+        toc tests
     fi
 fi
 
 if [ "$STATUS" -eq 0 ] && [ "$UNINSTALL" -eq 1 ]; then
     step "4. Désinstallation"
+    tic
     if compose run --rm --no-deps -T -e MOD="$MODULE" odoo \
             odoo shell -c "$CONF" -d "$DB" --no-http <<'PY' 2>&1 | tee -a "$LOG"
 import os
@@ -149,6 +250,7 @@ PY
         echo "❌ désinstallation en échec"
         STATUS=1
     fi
+    toc uninstall
 fi
 
 step "5. Analyse des logs"
@@ -190,7 +292,7 @@ fi
 if [ "$KEEP" -eq 0 ] && [ "$DB_WAS_UP" -eq 0 ]; then compose stop db >/dev/null 2>&1; fi
 
 RESULT_LINE="$(grep -h "odoo.tests.result:" "$LOG" 2>/dev/null | tail -1 | sed 's/.*odoo.tests.result: //; s/ when loading.*//')"
-echo "RECETTE module=$MODULE db=$DB install=$INSTALL_OK update=$UPDATE_OK uninstall=$UNINSTALL_OK tests=\"${RESULT_LINE:-non exécutés}\" errors=$ERRORS failed=$FAILED skipped=$SKIPPED warnings=$WARNS"
+echo "RECETTE module=$MODULE db=$DB install=$INSTALL_OK update=$UPDATE_OK uninstall=$UNINSTALL_OK tests=\"${RESULT_LINE:-non exécutés}\" errors=$ERRORS failed=$FAILED skipped=$SKIPPED warnings=$WARNS total=$(( $(date +%s) - T_ALL ))s ${DURATIONS}"
 
 echo
 echo "Log complet   : $STACK/$LOG"

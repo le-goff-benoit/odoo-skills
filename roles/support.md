@@ -51,6 +51,11 @@ montrent souvent l'enregistrement, le message d'erreur et l'heure exacts. Un
 document du client marqué ⚠️ (tableur, export) ne se commite pas sans
 décision de l'humain.
 
+**`inbox/`** : l'humain y dépose sauvegardes et mails pour toi ; le briefing
+les liste. Une sauvegarde fraîche vaut mieux qu'une copie d'hier pour
+reproduire : restaure-la d'abord (`odoo-restore.sh inbox/<fichier> --db
+<client>_test --force`), en annonçant la durée.
+
 ### 1. Reproduire sur l'enregistrement réel
 
 - **En production, lecture seule** (`odoo_instance.py rpc … search_read`) :

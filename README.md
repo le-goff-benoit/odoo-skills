@@ -72,12 +72,17 @@ odoo-release.sh open  ──▶  /odoo-new ×n  ──▶  /odoo-close  ──�
 ```
 
 - **Pendant la release**, chaque tâche reçoit une QA proportionnée : lint des
-  fichiers modifiés depuis l'ouverture, installation/mise à jour sur la base de
-  QA, tests ciblés. Pas de captures, pas de guide.
+  fichiers modifiés depuis l'ouverture, un seul chargement d'Odoo (`--quick`)
+  avec les tests ciblés sur une base par module gardée chaude. Pas de captures,
+  pas de guide. Le testeur ajoute un **point de contrôle** (suite complète du
+  module, base chaude, en arrière-plan) quand deux points se croisent, qu'un
+  modèle partagé est touché, ou tous les trois points.
 - **À la clôture**, tout est rejoué une fois sur l'état exact qui partira :
-  `odoo-recette.sh` enchaîne lint, base neuve, `-u`, suite complète (tours
-  compris), désinstallation, mise à niveau sur la copie du client, et écrit un
-  tableau. Puis recette navigateur, captures, livrables client, README final
+  `odoo-recette.sh` enchaîne lint, base neuve (clonée en secondes depuis un
+  **gabarit** par module où les dépendances standard sont préinstallées,
+  reconstruit quand le manifest change), `-u`, suite complète (tours compris),
+  désinstallation, mise à niveau sur la copie du client, et écrit un tableau
+  avec les durées. Puis recette navigateur, captures, livrables client, README final
   avec les versions lues dans les manifests, message de commit proposé.
 - **Exception** : une tâche qui touche aux droits, à la compta, à la
   facturation ou aux données existantes se valide immédiatement au niveau de la release.
@@ -153,6 +158,14 @@ Fichiers **générés**, à ne pas éditer :
 ~/.claude/CLAUDE.md   ~/.codex/AGENTS.md   (bloc délimité uniquement)
 ```
 
+## Le dossier `inbox/` d'un projet
+
+Créé par le scan ou à l'ouverture d'une release, ignoré par git : l'humain y
+dépose une **sauvegarde** (`.zip` Odoo.sh ou gestionnaire de bases, `.dump`,
+`.sql`) ou des **mails** (`.eml`) à l'attention des agents. Le briefing en liste
+le contenu avec la commande qui va avec (`odoo-restore.sh`, `odoo_mail.py`) ;
+les rôles y regardent à l'étape 0.
+
 ## Le dossier `.odoo-agents/` d'un projet
 
 Créé par `scripts/odoo_project_scan.py`, à la racine du projet client :
@@ -199,8 +212,10 @@ export ODOO_ADDONS_DIR=~/mon_projet   # dossier CONTENANT le module
 scripts/odoo-stack.sh build           # UNE FOIS PAR SÉRIE
 scripts/odoo-stack.sh up              # http://localhost:8079  (admin/admin)
 
-# QA de tâche : tests ciblés (base odoo_qa_<série>_<module>, jamais partagée)
-scripts/odoo-test.sh mon_module --update --tags /mon_module:TestMaClasse
+# QA de tâche : un seul chargement, tests ciblés (base odoo_qa_<série>_<module>, jamais partagée)
+scripts/odoo-test.sh mon_module --quick --tags /mon_module:TestMaClasse
+# Point de contrôle : suite complète du module, base chaude
+scripts/odoo-test.sh mon_module --quick
 
 # QA de release : le protocole complet, en un tableau (recette.md dans la release)
 scripts/odoo-recette.sh mon_module --release <release> --db client_test
