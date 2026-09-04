@@ -42,7 +42,14 @@ ajoute un point `[support #NNNN] <symptôme>` au suivi de la release :
 RELEASE=$(~/.odoo19-agents/scripts/odoo-release.sh current <racine>)
 # Pas de release ouverte ? on en ouvre une : un ticket est une livraison comme une autre.
 ~/.odoo19-agents/scripts/odoo-release.sh add "$RELEASE" "[support #NNNN] <symptôme en une ligne>"
+# Le ticket est un ou plusieurs mails .eml ? on les verse tels quels, fil et pièces jointes compris.
+python3 ~/.odoo19-agents/scripts/odoo_mail.py <fichiers.eml> --release "$RELEASE" --section "Ticket #NNNN"
 ```
+
+Les captures jointes vont dans `pieces/` : lis-les (`Read` sur le PNG), elles
+montrent souvent l'enregistrement, le message d'erreur et l'heure exacts. Un
+document du client marqué ⚠️ (tableur, export) ne se commite pas sans
+décision de l'humain.
 
 ### 1. Reproduire sur l'enregistrement réel
 

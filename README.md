@@ -128,6 +128,7 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 │   ├── odoo_briefing.py    briefing compact d'un projet — le premier réflexe
 │   ├── odoo_series.py      résolution de la série cible d'un module
 │   ├── odoo_project_scan.py écrit <projet>/.odoo-agents/PROJECT.md (relevé)
+│   ├── odoo_mail.py        verse un ou plusieurs .eml (demande, ticket) dans demande.md + pieces/
 │   ├── odoo-release.sh         open / current / add / done / changed / modules / close
 │   ├── odoo-lint.sh        ruff (config Odoo) + contrôles Odoo, --changed <ref>
 │   ├── odoo_lint.py        manifest, XML, sécurité, tests, motifs datés par série
@@ -186,6 +187,7 @@ scripts/odoo-release.sh current ~/mon_projet
 scripts/odoo-release.sh add <release> "Filtre corrigé" "TestContractsToInvoice"
 scripts/odoo-release.sh done <release> 1 "vert"
 scripts/odoo-release.sh modules <release>
+python3 scripts/odoo_mail.py ~/Downloads/ticket.eml --release <release> --section "Ticket #3720"
 
 # Lint : tout, ou seulement ce qui a changé depuis l'ouverture de la release
 scripts/odoo-lint.sh /chemin/vers/mon_module

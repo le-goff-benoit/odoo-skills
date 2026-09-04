@@ -44,6 +44,8 @@ Règles :
   des fichiers touchés, install/update et tests ciblés ; la recette complète
   se joue une fois, à la clôture. Une tâche qui touche aux droits, à la compta,
   à la facturation ou aux données existantes se valide tout de suite.
+- **Une demande reçue en `.eml`** se verse telle quelle dans `demande.md`
+  (`scripts/odoo_mail.py`), pièces jointes dans `pieces/` ; jamais résumée.
 - **Un ticket passe la main selon son verdict** : usage ou configuration → réponse
   seule ; données → réparation prouvée sur la copie, confirmée par l'humain pour la
   production ; bug avec test rouge → `/odoo-new` reprend à l'étape 2 sans rejouer

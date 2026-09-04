@@ -64,6 +64,21 @@ laisser un dossier vide derrière elle. La revue s'écrit dans la release s'il e
 déjà ouvert, sinon dans `<racine>/.odoo-agents/revue_en_cours.md`, que
 l'étape 1 déplacera au bon moment.
 
+**La demande arrive parfois en mail(s) `.eml`** — la demande d'origine du
+client, souvent avec des captures. Ne la résume pas : verse-la telle quelle.
+
+```bash
+python3 ~/.odoo19-agents/scripts/odoo_mail.py <fichier.eml> [...]                 # lire d'abord
+python3 ~/.odoo19-agents/scripts/odoo_mail.py <fichiers.eml> --release "$RELEASE"   # une fois la release ouverte
+```
+
+Il ajoute chaque mail à `demande.md` (expéditeur, date, objet, texte, fil dans
+l'ordre chronologique) et range les pièces jointes dans `pieces/`. Les captures
+sont des preuves à lire (`Read` sur le PNG) ; les documents du client
+(tableurs, contrats, exports) sont marqués ⚠️ : ils ne se commitent pas sans
+décision de l'humain. Tant que la release n'est pas ouverte, lis le mail sans
+`--release` ; le versement se fait à l'ouverture.
+
 Cherche aussi une **copie du client** (le briefing liste les bases du stack et
 les instances déclarées). Elle sert aux trois étapes. Si elle manque et que la
 demande touche des données existantes, demande-la à l'utilisateur dès
