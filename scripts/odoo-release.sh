@@ -46,7 +46,7 @@ case "$cmd" in
         [ -d "$ROOT" ] && [ -n "$TITLE" ] || usage
         ROOT="$(cd "$ROOT" && pwd)"
         if current="$("$0" current "$ROOT")" && [ -n "$current" ]; then
-            echo "Une release est déjà ouvert : $current" >&2
+            echo "Une release est déjà ouverte : $current" >&2
             echo "Le clôturer (/odoo-close) avant d'en ouvrir un autre, ou y ajouter le point." >&2
             exit 1
         fi

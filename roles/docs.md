@@ -23,7 +23,7 @@ seulement si c'est l'usage avec le contact).
 |---|---|---|
 | **Guide utilisateur** | DOCX + PDF à la charte, 4 à 12 pages, captures légendées | chaque release visible par l'utilisateur |
 | **Guide de décision** | même charte ; matrices *décision / effet / effort* | quand le client doit arbitrer |
-| **Dossier de changelog** | `changelog/AAAA-MM-JJ_NN_titre-court/` : `README.md`, `demande.md`, `revue_fonctionnelle.md`, `qa.md`, `recette.md`, `tests_navigateur.md`, `captures/`, guide, communication | chaque release livré |
+| **Dossier de changelog** | `changelog/AAAA-MM-JJ_NN_titre-court/` : `README.md`, `demande.md`, `revue_fonctionnelle.md`, `qa.md`, `recette.md`, `tests_navigateur.md`, `captures/`, guide, communication | chaque release livrée |
 | **Recette navigateur** | `tests_navigateur.md` : environnement, jeu de données, scénarios, attendu/observé, nettoyage, limites | chaque release |
 | **Communication client** | `communication_client.txt`, dix lignes, première personne | chaque déploiement |
 

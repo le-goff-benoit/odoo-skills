@@ -170,7 +170,7 @@ emit_command "odoo-new" "orchestration" \
     "<la demande de développement>" \
     'Demande à traiter : $ARGUMENTS' \
     "Une demande de dev de A à Z : cadrage → code → QA de tâche → journal" \
-    "Traite une demande de développement Odoo de bout en bout, dans la série du projet et dans la release de changelog ouvert (ou en ouvre un) : revue fonctionnelle contradictoire écrite dans la release, implémentation, QA de tâche sur Odoo local (lint des fichiers touchés, install/update, tests ciblés), puis entrée de journal. La recette complète se joue à la clôture de la release (/odoo-close). Avec boucle de reprise."
+    "Traite une demande de développement Odoo de bout en bout, dans la série du projet et dans la release de changelog ouverte (ou en ouvre une) : revue fonctionnelle contradictoire écrite dans la release, implémentation, QA de tâche sur Odoo local (lint des fichiers touchés, install/update, tests ciblés), puis entrée de journal. La recette complète se joue à la clôture de la release (/odoo-close). Avec boucle de reprise."
 
 emit_command "odoo-close" "release-close" \
     "[dossier de la release]" \

@@ -6,7 +6,7 @@ SERIES_MATRIX.md — 60 Ko et plus sur un projet vivant) par un seul relevé de
 quelques Ko qui contient tout ce qu'un agent doit savoir avant d'agir :
 
   - la série cible et son origine, les sources de référence ;
-  - la release de changelog ouvert (s'il y en a un) et ses points ;
+  - la release de changelog ouverte (s'il y en a un) et ses points ;
   - les sections écrites à la main de PROJECT.md (métier, décisions, pièges) ;
   - le relevé (une ligne par module) ;
   - les N dernières entrées du journal (défaut 3) et toutes les lignes « Appris » ;
