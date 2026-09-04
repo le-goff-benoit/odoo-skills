@@ -83,6 +83,12 @@ emit "odoo-developer" "implementation" \
     "Développeur Odoo (17.0 → saas~19.x, dans la série du projet). Écrit ou modifie le code d'un module custom (modèles, vues, sécurité, assets, tests) dans la ligne éditoriale des sources de sa série : ordre des membres, models.Constraint ou _sql_constraints selon la série, Command, api.model_create_multi, <list>, chatter, sécurité livrée avec le code. Livre les tests avec le code, lint des fichiers touchés et tests ciblés avant de rendre." \
     "green"
 
+emit "odoo-studio" "studio" \
+    "Read, Grep, Glob, Bash, Write, Edit" \
+    "Réaliser une demande sans module : Studio, automatisations, pack versionné" \
+    "Configurateur Odoo Studio (17.0 → saas~19.x). Réalise une demande SANS module : champs et modèles x_, automatisations, actions serveur et planifiées, vues, menus, rapports, droits — sur la copie locale du client, par identifiant externe, avec scénarios RPC pour preuve et un pack JSON versionné dans la release (odoo_pack.py export/diff/apply). Annonce les limites (safe_eval, pas de JS, pas de surcharge, pas de test Python) avant de faire ; déploie sur staging puis production seulement avec l'humain. Voie par défaut quand le projet n'a pas de module ou tourne sur Odoo Online." \
+    "pink"
+
 emit "odoo-support" "support" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Diagnostiquer un ticket : cause prouvée, contournement, réponse client" \

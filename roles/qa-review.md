@@ -19,7 +19,16 @@ dans le module.
 | **QA de release** | à la clôture (`/odoo-close`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
 
 La consigne dit le mode. Sans indication : release ouverte → QA de tâche ; pas de
-release → QA de release. Une tâche qui touche aux droits, à la compta, à la
+release → QA de release.
+
+**Point `[studio]`** (configuration en base, sans module) : la QA de tâche est
+`odoo_pack.py diff <release>/studio/pack.json --db <copie>` sans écart, les
+scénarios `studio/test_<point>.py` rejoués verts avec valeurs relues, l'écran
+vérifié si une vue change ; la QA de release rejoue tout sur une **copie fraîche**
+du client (`odoo-restore.sh … --force`) : `apply` du pack, `diff` à zéro,
+scénarios, `apply` une seconde fois sans changement (idempotence). Pas de
+`odoo-test.sh` ni de lint Python pour ces points ; les références
+`unresolved` du pack sont bloquantes. Une tâche qui touche aux droits, à la compta, à la
 facturation ou aux données existantes est toujours validée au niveau de la release.
 
 ## Référentiel

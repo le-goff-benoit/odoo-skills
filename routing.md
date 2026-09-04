@@ -28,7 +28,7 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 |---|---|
 | **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « Odoo sait-il faire… », arbitrer une règle métier | `odoo-analyst` **seul**, aucun code |
 | **Ticket de support** — « l'utilisateur voit… », « ça ne marche plus », « pourquoi… », un numéro de ticket | `odoo-support` **seul** : diagnostic prouvé, classement, contournement, réponse client ; passe la main selon le verdict (voir ci-dessous) |
-| **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-new`** : fonctionnel → dev → QA de tâche → journal, dans la release ouverte (ouverte au besoin) |
+| **Développement ou configuration** — créer, modifier, corriger, étendre (module ou Studio) | **`/odoo-new`** : fonctionnel → `odoo-developer` **ou** `odoo-studio` selon la voie choisie par l'analyste → QA de tâche → journal, dans la release ouverte (ouverte au besoin) |
 | **Clôture / livraison** — « ferme la release », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
 | **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode release) |
 | **Documentation** — guide utilisateur ou de décision, communication client, sur demande explicite | skill **`camptocamp-docs`** (sinon, c'est `/odoo-close` qui la produit) |
@@ -46,6 +46,12 @@ Règles :
   à la facturation ou aux données existantes se valide tout de suite.
 - **Une demande reçue en `.eml`** se verse telle quelle dans `demande.md`
   (`scripts/odoo_mail.py`), pièces jointes dans `pieces/` ; jamais résumée.
+- **Studio ou module** : l'analyste choisit selon le profil du projet (aucun
+  module ou Studio existant → Studio ; modules seuls → module ; Odoo Online →
+  Studio) sauf demande explicite ; les limites de Studio (`safe_eval`, pas de
+  JS, pas de surcharge, pas de test Python) sont annoncées avant de faire. Le
+  livrable Studio est un pack versionné (`odoo_pack.py`), appliqué par
+  identifiant externe, jamais en production sans confirmation.
 - **Un ticket passe la main selon son verdict** : usage ou configuration → réponse
   seule ; données → réparation prouvée sur la copie, confirmée par l'humain pour la
   production ; bug avec test rouge → `/odoo-new` reprend à l'étape 2 sans rejouer

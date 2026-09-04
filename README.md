@@ -51,6 +51,7 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 |---|---|---|
 | `odoo-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
 | `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant la release |
+| `odoo-studio` | Configurateur : réalise sans module (champs `x_`, automatisations, actions serveur et planifiées, vues, droits) sur la copie du client, prouve par scénarios RPC, livre un pack JSON versionné (`odoo_pack.py`) appliqué par identifiant externe ; annonce les limites de Studio | quand l'analyste choisit la voie Studio |
 | `odoo-support` | Support : reproduit un ticket sur l'enregistrement réel (production en lecture seule, copie client), prouve la cause, classe (usage, configuration, données, bug, évolution), mesure l'impact, écrit le test rouge et le brouillon de réponse ; passe la main selon le verdict | à chaque ticket |
 | `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **release** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
 | `/odoo-new` | La chaîne sur une demande : briefing → release → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
@@ -120,6 +121,7 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 │   ├── functional-review.md
 │   ├── implementation.md
 │   ├── support.md          ← odoo-support (tickets)
+│   ├── studio.md           ← odoo-studio (configuration en base, sans module)
 │   ├── qa-review.md
 │   ├── orchestration.md    ← /odoo-new
 │   ├── release-close.md        ← /odoo-close
@@ -133,6 +135,7 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 │   ├── odoo_briefing.py    briefing compact d'un projet — le premier réflexe
 │   ├── odoo_series.py      résolution de la série cible d'un module
 │   ├── odoo_project_scan.py écrit <projet>/.odoo-agents/PROJECT.md (relevé)
+│   ├── odoo_pack.py        export / diff / apply d'un pack de configuration par XML-ID (Studio sans module)
 │   ├── odoo_mail.py        verse un ou plusieurs .eml (demande, ticket) dans demande.md + pieces/
 │   ├── odoo-release.sh         open / current / add / done / changed / modules / close
 │   ├── odoo-lint.sh        ruff (config Odoo) + contrôles Odoo, --changed <ref>
@@ -212,6 +215,11 @@ scripts/odoo-release.sh add <release> "Filtre corrigé" "TestContractsToInvoice"
 scripts/odoo-release.sh done <release> 1 "vert"
 scripts/odoo-release.sh modules <release>
 python3 scripts/odoo_mail.py ~/Downloads/ticket.eml --release <release> --section "Ticket #3720"
+
+# Configuration en base sans module (voie Studio) : pack versionné, appliqué par XML-ID
+python3 scripts/odoo_pack.py export --db client_test --module cfg_client --out <release>/studio/pack.json
+python3 scripts/odoo_pack.py diff  <release>/studio/pack.json --instance client staging
+python3 scripts/odoo_pack.py apply <release>/studio/pack.json --instance client staging
 
 # Lint : tout, ou seulement ce qui a changé depuis l'ouverture de la release
 scripts/odoo-lint.sh /chemin/vers/mon_module

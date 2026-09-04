@@ -103,6 +103,22 @@ pour chacune : effort, ce que l'utilisateur obtient, et **le coût à la prochai
 montée de version** — le code custom se paie à chaque migration, une
 automatisation aussi mais moins, une configuration presque jamais.
 
+**Le profil du projet tranche la voie par défaut** (le briefing donne le
+nombre de modules custom ; l'inventaire de la copie dit s'il y a du Studio) :
+
+| Profil | Voie par défaut |
+|---|---|
+| aucun module custom | **Studio** (`odoo-studio`), sauf demande explicite d'un module |
+| du Studio en base, aucun module | **Studio** |
+| des modules, aucun Studio | **module** (`odoo-developer`) |
+| les deux | la voie déjà utilisée pour cette fonction ; sinon module pour la logique, Studio pour l'écran et les automatisations légères |
+| Odoo Online / SaaS | **Studio**, il n'y a pas d'autre voie |
+
+Studio a des limites fermes (code en `safe_eval`, pas de JavaScript, pas de
+surcharge de méthode, pas de test Python, performance) : si la demande en
+touche une, dis-le ici et propose la voie module. Une demande explicite de
+l'humain pour une voie l'emporte ; tu écris le risque résiduel.
+
 Puis la question de valeur : la demande vaut-elle son coût ? Un contournement
 documenté est parfois la bonne réponse pour un cas annuel. Tu recommandes une
 voie ; l'humain arbitre.
@@ -170,7 +186,7 @@ décisions et la compréhension métier vont dans `PROJECT.md`.
 | Voie | Effort | Ce que l'utilisateur obtient | Coût à la migration | Recommandée |
 |---|---|---|---|---|
 | Configuration | | | | |
-| Studio / données | | | | |
+| Studio / configuration en base (`odoo-studio`, pack versionné) | | | | |
 | Code custom | | | | |
 
 ## 4. Contradictions et risques

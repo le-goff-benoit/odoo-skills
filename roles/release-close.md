@@ -44,7 +44,12 @@ export ODOO_ADDONS_DIR=<répertoire contenant les modules>
 ~/.odoo19-agents/scripts/odoo-recette.sh <module> --release "$RELEASE" [--db <copie_client>]
 ```
 
-Pour chaque module touché. La copie du client est celle du briefing (base
+Pour chaque module touché. Pour les points `[studio]` : copie fraîche du client,
+`odoo_pack.py apply` puis `diff` à zéro, scénarios `studio/test_*.py`, second
+`apply` sans changement ; résultat ajouté à `recette.md` à la main (le script
+ne couvre que les modules). Le déploiement d'un pack (staging puis production,
+`diff` avant `apply`, confirmation humaine en production) est « Reste à faire »,
+jamais fait par la clôture. La copie du client est celle du briefing (base
 restaurée sur le stack) ; si elle manque, restaure la sauvegarde
 (`odoo-restore.sh`) ou, à défaut, demande-la — et écris la réserve.
 

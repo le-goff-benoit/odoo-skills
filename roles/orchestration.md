@@ -137,9 +137,16 @@ demande, point, déplacement de la revue, étape 2. Si la réponse change le
 périmètre au point d'invalider la revue, dis-le et relance l'analyste sur le
 seul point qui change.
 
-## Étape 2 — Implémentation (`odoo-developer`)
+## Étape 2 — Implémentation (`odoo-developer` ou `odoo-studio`)
 
-Rôle : `~/.odoo19-agents/roles/implementation.md`, avec la spec de
+La revue a choisi la **voie** (section « Voies possibles ») : module custom →
+`odoo-developer` (rôle `implementation.md`) ; configuration en base →
+`odoo-studio` (rôle `studio.md`, livrable `changelog/<release>/studio/` :
+scripts de construction, scénarios RPC, `pack.json`). Le point de la release
+est préfixé `[studio]` dans le second cas. Une limite de Studio découverte en
+cours de route remonte à l'humain avant tout contournement.
+
+Rôle développeur : `~/.odoo19-agents/roles/implementation.md`, avec la spec de
 `revue_fonctionnelle.md` comme périmètre — ni plus, ni moins. Il livre le code,
 les tests, et le lint vert sur les fichiers touchés :
 
@@ -161,6 +168,10 @@ tests ciblés de la tâche.
 export ODOO_ADDONS_DIR=<répertoire contenant le module>
 ~/.odoo19-agents/scripts/odoo-test.sh <module> --quick --tags /<module>:<TestClasse>   # un seul chargement
 ```
+
+Pour un point `[studio]`, la QA de tâche est : `odoo_pack.py diff` sans écart
+sur la copie, scénarios `studio/test_<point>.py` verts, écran vérifié
+(`odoo-shot.sh`) si une vue change — pas de `odoo-test.sh`.
 
 Le testeur décide en plus d'un **point de contrôle** (suite complète du module,
 base chaude) quand le diff croise un autre point de la release, touche un
