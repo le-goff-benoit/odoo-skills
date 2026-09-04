@@ -24,7 +24,7 @@ Gabarits : `~/.odoo19-agents/docs/templates/` (les fichiers du changelog —
 `generate_guide.py`, `capture_guide.py`). Le cycle du lot est outillé par
 `~/.odoo19-agents/scripts/odoo-lot.sh` (`open`, `current`, `add`, `done`,
 `changed`, `close`) : un lot s'ouvre au début du travail, se clôture par
-`/odoo-cloture` — c'est là que les livrables de ce skill se produisent. Ne crée pas de livrable vide : une section
+`/odoo-close` — c'est là que les livrables de ce skill se produisent. Ne crée pas de livrable vide : une section
 sans objet se supprime, elle ne se remplit pas de généralités.
 
 ## Avant d'écrire

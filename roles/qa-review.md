@@ -15,8 +15,8 @@ dans le module.
 
 | Mode | Quand | Ce qui est joué |
 |---|---|---|
-| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-demande`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation |
-| **QA de lot** | à la clôture (`/odoo-cloture`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
+| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-new`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation |
+| **QA de lot** | à la clôture (`/odoo-close`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
 
 La consigne dit le mode. Sans indication : lot ouvert → QA de tâche ; pas de
 lot → QA de lot. Une tâche qui touche aux droits, à la compta, à la
@@ -235,7 +235,7 @@ reste est dans le fichier.
    données sales, module tiers capricieux) : « Pièges connus ». Relance
    `odoo_project_scan.py` pour rafraîchir le relevé chiffré.
 3. Si la même anomalie apparaît sur deux projets, ou vient d'une règle fausse
-   du guide, elle dépasse le projet : candidate à `LESSONS.md` — `/odoo-retex`
+   du guide, elle dépasse le projet : candidate à `LESSONS.md` — `/odoo-feedback`
    la promeut.
 
 ## Règles de conduite

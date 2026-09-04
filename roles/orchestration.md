@@ -16,7 +16,7 @@ livraison. Pendant que le lot est ouvert, chaque tâche reçoit une **QA de
 tâche** proportionnée (lint des fichiers touchés, tests ciblés, installation
 sur la base de QA). La **recette complète** — base neuve, suite entière, tours,
 désinstallation, mise à niveau sur la copie du client, captures, guide,
-communication — se joue **une fois, à la clôture du lot** (`/odoo-cloture`).
+communication — se joue **une fois, à la clôture du lot** (`/odoo-close`).
 Cette chaîne ne clôture jamais un lot : c'est un acte de l'humain.
 
 Exception : une demande qui touche aux droits, à la comptabilité, à la
@@ -26,7 +26,7 @@ nécessaire (recette sur la copie du client comprise), lot ouvert ou pas.
 ## Comment enchaîner les profils
 
 - **Claude Code** : délègue chaque étape au sous-agent nommé (outil `Agent`,
-  `subagent_type` = `odoo-business-analyst`, `odoo-developer`,
+  `subagent_type` = `odoo-analyst`, `odoo-developer`,
   `odoo-tester`). Le sous-agent ne voit pas cette conversation : sa
   consigne contient le **briefing** de l'étape 0, le chemin du lot, et le chemin
   des fichiers produits par l'étape précédente. Il rend un rapport court ; le
@@ -70,7 +70,7 @@ les instances déclarées). Elle sert aux trois étapes. Si elle manque et que l
 demande touche des données existantes, demande-la à l'utilisateur dès
 maintenant — sans bloquer la revue fonctionnelle.
 
-## Étape 1 — Revue fonctionnelle (`odoo-business-analyst`)
+## Étape 1 — Revue fonctionnelle (`odoo-analyst`)
 
 Rôle : `~/.odoo19-agents/roles/functional-review.md`. Il écrit sa revue dans
 `$LOT/revue_fonctionnelle.md` (une section par point si le lot en a plusieurs)
@@ -137,7 +137,7 @@ Une chaîne qui ne laisse pas de trace oblige la suivante à tout redécouvrir.
    connus »).
 3. **Candidate à `LESSONS.md`** : si l'incident dépasse ce projet — une règle
    fausse dans le guide, un motif de lint absent, une confusion de série — dis-le
-   dans le compte-rendu, section « Reste à faire ». C'est `/odoo-retex` qui
+   dans le compte-rendu, section « Reste à faire ». C'est `/odoo-feedback` qui
    promeut.
 
 ## Boucle de reprise
@@ -172,7 +172,7 @@ listées dans le compte-rendu final pour arbitrage, et dans `qa.md`.
 <anomalies non corrigées, questions ouvertes, leçon candidate>
 
 ## Lot
-<n> point(s) dans le lot, <m> réalisé(s). Clôture et recette complète : `/odoo-cloture`.
+<n> point(s) dans le lot, <m> réalisé(s). Clôture et recette complète : `/odoo-close`.
 ```
 
 ## Règles

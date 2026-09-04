@@ -7,9 +7,9 @@
 #   ~/.codex/skills/<nom>/SKILL.md     — skills Codex
 #   ~/.claude/CLAUDE.md                — aiguillage global Claude Code
 #   ~/.codex/AGENTS.md                 — aiguillage global Codex
-#   ~/.claude/commands/odoo-demande.md — commande d'enchaînement Claude Code
-#   ~/.claude/commands/odoo-cloture.md — clôture de lot (recette complète) Claude Code
-#   ~/.claude/commands/odoo-retex.md   — retour d'expérience Claude Code
+#   ~/.claude/commands/odoo-new.md — commande d'enchaînement Claude Code
+#   ~/.claude/commands/odoo-close.md — clôture de lot (recette complète) Claude Code
+#   ~/.claude/commands/odoo-feedback.md   — retour d'expérience Claude Code
 #   ~/.codex/skills/odoo-{feature,lot-close,retex}/ — les mêmes, côté Codex
 #   ~/.claude/skills/<nom>/SKILL.md    — skills Claude Code (camptocamp-docs)
 #
@@ -61,7 +61,7 @@ emit() {
 
 # Anciens noms (avant le 2026-09-04) : on retire les fichiers générés pour qu'ils
 # ne traînent pas dans les sélecteurs à côté des nouveaux.
-for old in odoo-functional-reviewer odoo-qa-reviewer odoo-feature odoo-lot-close odoo-cadrage odoo-dev odoo-qa; do
+for old in odoo-functional-reviewer odoo-qa-reviewer odoo-feature odoo-lot-close odoo-cadrage odoo-dev odoo-qa odoo-business-analyst odoo-demande odoo-cloture odoo-retex; do
     rm -f "$CLAUDE_AGENTS/$old.md" "$CLAUDE_COMMANDS/$old.md"
     rm -rf "$CODEX_SKILLS/$old"
 done
@@ -71,7 +71,7 @@ echo "Génération des profils d'agents Odoo…"
 # Les profils fonctionnel et QA n'écrivent jamais dans le module, mais ils
 # écrivent la revue, la QA et la mémoire du projet (changelog/<lot>/, .odoo-agents/) :
 # ils ont donc Write/Edit, et le rôle borne les chemins.
-emit "odoo-business-analyst" "functional-review" \
+emit "odoo-analyst" "functional-review" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Avant de coder : cadrer et challenger une demande, écrire la spec" \
     "Analyste fonctionnel contradicteur Odoo (17.0 → saas~19.x, dans la série du projet). À utiliser AVANT tout développement : remonte au problème réel, vérifie dans les sources de la série si le standard ou la base du client couvre déjà le besoin, compare configuration / Studio / code avec leur coût à la migration, remonte contradictions et non-dits (multi-société, droits, reprise de données, modules disparus), pose les questions bloquantes et écrit la spécification avec critères d'acceptation dans le lot. N'écrit pas de code." \
@@ -118,7 +118,7 @@ inject_routing() {
         printf '%s\n\n' "$heading"
         cat "$HERE/routing.md"
         printf '\nPour une demande de développement, la chaîne complète est outillée par\n'
-        printf 'la commande `/odoo-demande`.\n'
+        printf 'la commande `/odoo-new`.\n'
         printf '%s\n' "$MARK_END"
     } > "$tmp.block"
 
@@ -166,19 +166,19 @@ emit_command() {
     echo "  ✓ $CODEX_SKILLS/$slug/SKILL.md"
 }
 
-emit_command "odoo-demande" "orchestration" \
+emit_command "odoo-new" "orchestration" \
     "<la demande de développement>" \
     'Demande à traiter : $ARGUMENTS' \
     "Une demande de dev de A à Z : cadrage → code → QA de tâche → journal" \
-    "Traite une demande de développement Odoo de bout en bout, dans la série du projet et dans le lot de changelog ouvert (ou en ouvre un) : revue fonctionnelle contradictoire écrite dans le lot, implémentation, QA de tâche sur Odoo local (lint des fichiers touchés, install/update, tests ciblés), puis entrée de journal. La recette complète se joue à la clôture du lot (/odoo-cloture). Avec boucle de reprise."
+    "Traite une demande de développement Odoo de bout en bout, dans la série du projet et dans le lot de changelog ouvert (ou en ouvre un) : revue fonctionnelle contradictoire écrite dans le lot, implémentation, QA de tâche sur Odoo local (lint des fichiers touchés, install/update, tests ciblés), puis entrée de journal. La recette complète se joue à la clôture du lot (/odoo-close). Avec boucle de reprise."
 
-emit_command "odoo-cloture" "lot-close" \
+emit_command "odoo-close" "lot-close" \
     "[dossier du lot]" \
     'Lot à clôturer : $ARGUMENTS' \
     "Clôturer le lot : recette complète, captures, guide, README, commit" \
     "Clôture un lot de changelog Odoo : recette complète outillée (base neuve, suite de tests entière, tours, désinstallation, mise à niveau sur la copie du client), recette navigateur et captures, livrables client (guide, communication), README final avec versions lues dans les manifests, message de commit proposé, capitalisation dans le journal. Ne clôture pas si un contrôle est rouge."
 
-emit_command "odoo-retex" "retex" \
+emit_command "odoo-feedback" "retex" \
     "[période ou projet]" \
     'Périmètre demandé : $ARGUMENTS' \
     "Améliorer le dispositif : leçons des journaux → guide, lint, rôles" \
@@ -211,7 +211,7 @@ emit_skill "camptocamp-docs" "docs" \
 
 # --- Contrôle : Claude et Codex doivent porter le même texte ------------------
 echo
-for role in functional-review:odoo-business-analyst implementation:odoo-developer qa-review:odoo-tester; do
+for role in functional-review:odoo-analyst implementation:odoo-developer qa-review:odoo-tester; do
     slug="${role##*:}"
     if diff -q <(sed '1,/^---$/d' "$CLAUDE_AGENTS/$slug.md" | sed '1,/^---$/d') \
                <(sed '1,/^---$/d' "$CODEX_SKILLS/$slug/SKILL.md" | sed '1,/^---$/d') >/dev/null; then

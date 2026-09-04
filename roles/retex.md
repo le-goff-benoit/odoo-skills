@@ -103,7 +103,7 @@ trompe fait plus de dégâts qu'un contrôle absent.
 ## 4. Reconstruire et vérifier
 
 ```bash
-# Dater le passage : le compteur de /odoo-cloture et la prochaine relecture partent d'ici
+# Dater le passage : le compteur de /odoo-close et la prochaine relecture partent d'ici
 sed -i "s/dernier-retex: [0-9-]*/dernier-retex: $(date +%F)/" ~/.odoo19-agents/LESSONS.md
 ~/.odoo19-agents/build.sh
 # Non-régression : le lint doit rester propre là où il l'était

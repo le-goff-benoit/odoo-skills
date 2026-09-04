@@ -26,12 +26,12 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 
 | Nature de la demande | Réponse |
 |---|---|
-| **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « Odoo sait-il faire… », arbitrer une règle métier | `odoo-business-analyst` **seul**, aucun code |
-| **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-demande`** : fonctionnel → dev → QA de tâche → journal, dans le lot ouvert (ouvert au besoin) |
-| **Clôture / livraison** — « ferme le lot », « prépare la livraison », « recette complète » | **`/odoo-cloture`** : recette entière, captures, guide, README, commit proposé |
+| **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « Odoo sait-il faire… », arbitrer une règle métier | `odoo-analyst` **seul**, aucun code |
+| **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-new`** : fonctionnel → dev → QA de tâche → journal, dans le lot ouvert (ouvert au besoin) |
+| **Clôture / livraison** — « ferme le lot », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
 | **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode lot) |
 | **Documentation** — guide utilisateur ou de décision, communication client | skill **`camptocamp-docs`** |
-| **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-retex`** |
+| **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-feedback`** |
 
 Règles :
 

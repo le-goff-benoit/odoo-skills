@@ -49,12 +49,12 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 
 | Profil / commande | Rôle | Quand |
 |---|---|---|
-| `odoo-business-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
+| `odoo-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
 | `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
 | `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
-| `/odoo-demande` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
-| `/odoo-cloture` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
-| `/odoo-retex` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
+| `/odoo-new` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
+| `/odoo-close` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
+| `/odoo-feedback` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
 | `camptocamp-docs` (skill) | Guide utilisateur / de décision DOCX + PDF à la charte, communication client, captures depuis la copie locale | à la clôture, ou sur demande |
 
 ## Tâche légère, lot lourd
@@ -64,7 +64,7 @@ Une demande de développement s'inscrit dans un **lot** de changelog
 livraison. Le cycle :
 
 ```
-odoo-lot.sh open  ──▶  /odoo-demande ×n  ──▶  /odoo-cloture  ──▶  commit, déploiement
+odoo-lot.sh open  ──▶  /odoo-new ×n  ──▶  /odoo-close  ──▶  commit, déploiement
    demande.md          revue_fonctionnelle.md      recette.md, tests_navigateur.md
    README (suivi)      code + tests, qa.md         captures/, guide, communication
    .base (git)         journal (≤ 15 lignes)       README final, journal de lot
@@ -90,16 +90,16 @@ côté Codex, le même rôle est appliqué en séquence par l'agent principal.
 ### Utilisation
 
 ```
-> /odoo-demande ajoute un champ « référence chantier » sur la commande client
-> /odoo-demande corrige le calcul de la remise sur les lignes de kit      # même lot
-> /odoo-cloture
-> utilise odoo-business-analyst pour challenger cette demande : …
+> /odoo-new ajoute un champ « référence chantier » sur la commande client
+> /odoo-new corrige le calcul de la remise sur les lignes de kit      # même lot
+> /odoo-close
+> utilise odoo-analyst pour challenger cette demande : …
 > lance odoo-tester sur alamaison_customisation                     # mode lot
-> /odoo-retex
+> /odoo-feedback
 ```
 
-Codex : mêmes noms, en skills (`/odoo-demande …`, `/odoo-cloture`, `/odoo-retex`,
-`/odoo-business-analyst …`, `/odoo-developer …`, `/odoo-tester …`).
+Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`,
+`/odoo-analyst …`, `/odoo-developer …`, `/odoo-tester …`).
 
 ## Arborescence
 
@@ -114,9 +114,9 @@ Codex : mêmes noms, en skills (`/odoo-demande …`, `/odoo-cloture`, `/odoo-ret
 │   ├── functional-review.md
 │   ├── implementation.md
 │   ├── qa-review.md
-│   ├── orchestration.md    ← /odoo-demande
-│   ├── lot-close.md        ← /odoo-cloture
-│   ├── retex.md            ← /odoo-retex
+│   ├── orchestration.md    ← /odoo-new
+│   ├── lot-close.md        ← /odoo-close
+│   ├── retex.md            ← /odoo-feedback
 │   └── docs.md             ← skill camptocamp-docs
 ├── docs/                   ← livrables documentaires (charte, gabarits du changelog)
 │   └── templates/changelog/  suivi.md (lot ouvert), README.md (final), demande.md,
@@ -165,7 +165,7 @@ lot. Le briefing ne montre que les dernières entrées et extrait les « Appris 
 des autres : un journal qui gonfle ne coûte plus de tokens, mais reste lisible
 par l'humain s'il tient ses quinze lignes.
 
-La boucle d'amélioration : le QA écrit ce qu'il a appris → `/odoo-retex` relit
+La boucle d'amélioration : le QA écrit ce qu'il a appris → `/odoo-feedback` relit
 tous les journaux et les recettes, garde ce qui est récurrent ou coûteux, le
 promeut dans `LESSONS.md` **avec un effet obligatoire** (motif de lint,
 correction du guide, règle de rôle, ou réglage du briefing) → `build.sh` rediffuse.

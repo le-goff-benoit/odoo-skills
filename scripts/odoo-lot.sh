@@ -17,7 +17,7 @@
 #
 # Pendant que le lot est ouvert, le suivi est léger (un point = une ligne du
 # README, un test ciblé). La recette complète, les captures et les livrables
-# client se font à la clôture : /odoo-cloture.
+# client se font à la clôture : /odoo-close.
 
 set -euo pipefail
 shopt -s nullglob
@@ -47,7 +47,7 @@ case "$cmd" in
         ROOT="$(cd "$ROOT" && pwd)"
         if current="$("$0" current "$ROOT")" && [ -n "$current" ]; then
             echo "Un lot est déjà ouvert : $current" >&2
-            echo "Le clôturer (/odoo-cloture) avant d'en ouvrir un autre, ou y ajouter le point." >&2
+            echo "Le clôturer (/odoo-close) avant d'en ouvrir un autre, ou y ajouter le point." >&2
             exit 1
         fi
         DAY="$(date +%F)"

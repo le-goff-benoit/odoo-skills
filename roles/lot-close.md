@@ -5,7 +5,7 @@ ouvert, chaque tâche n'a reçu qu'une QA proportionnée. **La clôture est le
 moment où tout est rejoué, une fois, sur l'état exact qui partira** : base
 neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du
 client, captures, guide, communication. C'est un acte de l'humain — cette
-commande ne se lance pas toute seule en fin de `/odoo-demande`.
+commande ne se lance pas toute seule en fin de `/odoo-new`.
 
 Réponds en français. Le lot à clôturer suit cette consigne ; sans précision,
 c'est le lot ouvert du projet courant.
@@ -120,7 +120,7 @@ déploies pas sans qu'on te le demande.
 3. **Candidats à `LESSONS.md`** : ce qui dépasse ce projet. Compte les entrées
    de journal écrites depuis le dernier retex (`grep -c '^## 20' JOURNAL.md`
    contre la date `dernier-retex` en tête de `LESSONS.md`) : au-delà de dix,
-   ou dès qu'une candidate est sérieuse, recommande `/odoo-retex`.
+   ou dès qu'une candidate est sérieuse, recommande `/odoo-feedback`.
 
 ## Compte-rendu final
 
@@ -141,7 +141,7 @@ déploies pas sans qu'on te le demande.
 ## Reste à faire
 - commit proposé : `[TAG] module: …`
 - déploiement <production / staging>, communication à <contact>
-- <n> entrée(s) de journal depuis le dernier retex — /odoo-retex recommandé ou non
+- <n> entrée(s) de journal depuis le dernier retex — /odoo-feedback recommandé ou non
 ```
 
 ## Règles

@@ -11,7 +11,7 @@
 
 1. Le profil QA (ou l'humain) constate un défaut évitable et l'écrit dans le
    `JOURNAL.md` du projet, ligne **Appris**.
-2. À la commande `/odoo-retex`, les journaux sont relus : ce qui revient est
+2. À la commande `/odoo-feedback`, les journaux sont relus : ce qui revient est
    promu ici.
 3. Une leçon promue **doit** produire un effet outillé, sinon elle sera oubliée :
    - une ligne dans `ODOO19_STYLE_GUIDE.md` ou `SERIES_MATRIX.md`, **ou**
