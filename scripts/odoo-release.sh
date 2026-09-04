@@ -60,6 +60,7 @@ case "$cmd" in
             printf '# Dépôt pour l'"'"'humain : sauvegardes (.zip/.dump/.sql) et mails (.eml)\n# à l'"'"'attention des agents. Jamais versionné.\n*\n!.gitignore\n' > "$ROOT/inbox/.gitignore"
         fi
         git -C "$ROOT" rev-parse HEAD 2>/dev/null > "$RELEASE/.base" || echo "sans-git" > "$RELEASE/.base"
+        date -u +%Y-%m-%dT%H:%M:%S > "$RELEASE/.opened"    # pour odoo_pack.py export --since
         LABEL="$(sed -n 's/^ *lot_label *[=:] *\([^ ]*\).*/\1/p' "$ROOT/.odoo-agents/config" 2>/dev/null | head -1)"
         LABEL="${LABEL:-release}"
         sed -e "s/<Titre de la release>/$TITLE/" -e "s/<jj mois aaaa>/$(date '+%d.%m.%Y')/" \

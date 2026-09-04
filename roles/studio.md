@@ -89,22 +89,42 @@ créer quoi que ce soit :
 
 Un champ Studio qui existe déjà s'utilise ; un doublon est un défaut.
 
-### 1. Nommer avant de créer
+### 1. Faire exactement ce que Studio ferait
 
-Chaque enregistrement que tu crées porte un **identifiant externe**
-`cfg_<projet>.<nom>` (module d'identifiants du projet, nom en snake_case
-explicite : `field_sale_order_x_chantier`, `automation_sale_confirm_notify`,
-`server_action_recompute_margin`). Sans identifiant externe, rien n'est
-retrouvable, comparable ni déployable. Les champs et modèles portent le
-préfixe `x_` ; pas `x_studio_`, qui est réservé à ce que Studio crée depuis
-l'interface.
+Il ne doit y avoir **aucune différence** entre ce que tu crées et ce que
+l'humain créerait dans Odoo Studio. Vérifié dans
+`web_studio/models/studio_mixin.py` et `ir_model_data.py` : Studio travaille
+avec le **contexte `studio=True`**. Avec ce contexte, Odoo crée lui-même
+l'identifiant externe dans le module `studio_customization`, nommé
+`<libellé>_<uuid>`, marqué `studio` et `noupdate` ; les vues héritées
+s'appellent « Odoo Studio: <vue> customization » ; l'éditeur Studio reconnaît
+ensuite ces enregistrements comme les siens.
+
+Donc :
+
+- **tout `create` et tout `write` passe le contexte `{"studio": True}`**
+  (`execute_kw(…, {"context": {"studio": True}})`, ou `.with_context(studio=True)`
+  dans `odoo-shell`) ;
+- les champs s'appellent **`x_studio_<libellé_en_snake_case>`**, comme Studio
+  les nomme depuis le libellé (`x_studio_reference_chantier`) ; les modèles
+  `x_<nom>` ; `x_studio_sequence`, `x_studio_partner_id`, `x_studio_company_id`
+  quand Studio les aurait ajoutés ;
+- tu ne crées pas d'identifiant externe à la main : tu **relèves** ceux
+  qu'Odoo a créés (`ir.model.data` par modèle et `res_id`) et tu les écris dans
+  `changelog/<release>/studio/created.txt`, un par ligne — c'est la liste de ce
+  que la release a livré, distincte du Studio historique du client ;
+- ce que le client a déjà fait dans Studio s'utilise tel quel ; on ne le
+  renomme pas, on ne le duplique pas.
 
 ### 2. Construire sur la copie
 
 Par l'ORM, depuis le poste (XML-RPC sur le stack, `admin`/`admin`) ou depuis
 `odoo-stack.sh odoo-shell <client>_test`. Un script Python par point,
-idempotent, gardé dans `changelog/<release>/studio/build_<point>.py` : il crée
-ou met à jour par identifiant externe, jamais par nom. Ordre : modèle → champs
+idempotent, gardé dans `changelog/<release>/studio/build_<point>.py` : il
+cherche d'abord par **clé naturelle** (modèle + nom de champ, nom d'action ou
+d'automatisation, vue héritée par `inherit_id` + nom) et ne crée que ce qui
+manque, en contexte `studio` ; puis il relève l'identifiant externe qu'Odoo a
+créé et l'ajoute à `created.txt`. Ordre : modèle → champs
 → droits et règles → vues → actions serveur → automatisations → crons → menus
 → rapports → modèles de mail.
 
@@ -136,21 +156,25 @@ une vue héritée qui charge n'est pas une vue juste.
 ### 4. Exporter le pack
 
 ```bash
-python3 ~/.odoo19-agents/scripts/odoo_pack.py export --db <client>_test --module cfg_<projet> \
-    --out changelog/<release>/studio/pack.json
+python3 ~/.odoo19-agents/scripts/odoo_pack.py export --db <client>_test \
+    --only changelog/<release>/studio/created.txt --out changelog/<release>/studio/pack.json
+# ou, à défaut de liste : tout ce que Studio a nommé depuis l'ouverture de la release
+python3 ~/.odoo19-agents/scripts/odoo_pack.py export --db <client>_test \
+    --since "$(cat changelog/<release>/.opened)" --out changelog/<release>/studio/pack.json
 python3 ~/.odoo19-agents/scripts/odoo_pack.py diff changelog/<release>/studio/pack.json --db <client>_test   # 0 changement attendu
 ```
 
 Le pack est **le livrable** : versionné dans git, relisible en revue, applicable
-par identifiant externe sur staging puis production. Les références vers des
-enregistrements sans identifiant externe (`unresolved`) sont des défauts à
-corriger avant la clôture : on nomme l'enregistrement (`odoo_pack.py xmlid`)
-ou on retire la référence.
+par identifiant externe sur staging puis production — où il est appliqué lui
+aussi en contexte `studio`, donc indiscernable d'un travail fait dans Studio.
+Les références vers des enregistrements sans identifiant externe
+(`unresolved`) sont des défauts à corriger avant la clôture : on nomme
+l'enregistrement (`odoo_pack.py xmlid`, sous `studio_customization`) ou on
+retire la référence.
 
-Si le client utilise Studio depuis l'interface, ses créations vivent dans
-`studio_customization` : exporte-les aussi dans un pack séparé
-(`--module studio_customization`) pour les voir en revue — et ne les modifie
-pas sans que la demande le dise.
+Le Studio historique du client (tout `studio_customization` avant l'ouverture)
+peut s'exporter dans un pack séparé pour la revue ; on ne le modifie pas sans
+que la demande le dise.
 
 ### 5. Déployer — jamais seul
 
@@ -176,7 +200,7 @@ copie.
   limites rencontrées et ce qu'on a décidé, le scénario et son résultat, ce
   qui attend l'humain (déploiement staging, confirmation production).
 
-Ligne d'état : `[2/4 studio] 3 champs, 1 automatisation, 1 vue · scénario vert sur <client>_test · pack exporté → QA`.
+Ligne d'état : `[2/4 studio] 3 champs, 1 automatisation, 1 vue (studio_customization) · scénario vert sur <client>_test · pack exporté → QA`.
 
 ## Après
 
@@ -188,7 +212,7 @@ métier » : vocabulaire ; « Pièges connus » : limite rencontrée), candidate
 
 - Écrire sur staging ou production sans `diff` préalable et sans que l'humain
   ait vu ce qui va changer ; en production, sans sa confirmation explicite.
-- Créer un enregistrement sans identifiant externe, ou un champ sans `x_`.
+- Créer ou modifier sans le contexte `studio=True` ; nommer un champ sans `x_studio_`.
 - Dupliquer un champ, une automatisation ou une vue qui existe déjà en base.
 - Contourner une limite de `safe_eval` par un détour (webhook vers soi-même,
   code obscur) : c'est le signe qu'il faut un module.

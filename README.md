@@ -51,7 +51,7 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 |---|---|---|
 | `odoo-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
 | `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant la release |
-| `odoo-studio` | Configurateur : réalise sans module (champs `x_`, automatisations, actions serveur et planifiées, vues, droits) sur la copie du client, prouve par scénarios RPC, livre un pack JSON versionné (`odoo_pack.py`) appliqué par identifiant externe ; annonce les limites de Studio | quand l'analyste choisit la voie Studio |
+| `odoo-studio` | Configurateur : réalise sans module, exactement comme Studio (contexte `studio`, `x_studio_`, `studio_customization`) — champs, automatisations, actions serveur et planifiées, vues, droits) sur la copie du client, prouve par scénarios RPC, livre un pack JSON versionné (`odoo_pack.py`) appliqué par identifiant externe ; annonce les limites de Studio | quand l'analyste choisit la voie Studio |
 | `odoo-support` | Support : reproduit un ticket sur l'enregistrement réel (production en lecture seule, copie client), prouve la cause, classe (usage, configuration, données, bug, évolution), mesure l'impact, écrit le test rouge et le brouillon de réponse ; passe la main selon le verdict | à chaque ticket |
 | `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **release** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
 | `/odoo-new` | La chaîne sur une demande : briefing → release → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
@@ -217,7 +217,7 @@ scripts/odoo-release.sh modules <release>
 python3 scripts/odoo_mail.py ~/Downloads/ticket.eml --release <release> --section "Ticket #3720"
 
 # Configuration en base sans module (voie Studio) : pack versionné, appliqué par XML-ID
-python3 scripts/odoo_pack.py export --db client_test --module cfg_client --out <release>/studio/pack.json
+python3 scripts/odoo_pack.py export --db client_test --only <release>/studio/created.txt --out <release>/studio/pack.json
 python3 scripts/odoo_pack.py diff  <release>/studio/pack.json --instance client staging
 python3 scripts/odoo_pack.py apply <release>/studio/pack.json --instance client staging
 

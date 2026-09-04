@@ -3,13 +3,21 @@
 « Studio » (champs, modèles, automatisations, actions serveur, vues, menus, droits…)
 entre une base et un fichier JSON versionnable — sans module.
 
+Même nomenclature qu'Odoo Studio : les enregistrements sont créés et modifiés avec
+le contexte `studio=True`, ce qui laisse Odoo créer lui-même l'identifiant externe
+dans `studio_customization` (`<libellé>_<uuid>`, marqué `studio`, `noupdate`). Un
+pack exporté depuis une base et appliqué sur une autre y est indiscernable d'un
+travail fait dans Studio. `--since` (date ISO, typiquement l'ouverture de la
+release, fichier `.opened`) ou `--only` (un XML-ID par ligne) restreignent l'export
+à ce que la release a créé, sans emporter le Studio historique du client.
+
 Tout repose sur l'identifiant externe (`ir.model.data`, `module.name`) : un
 enregistrement du pack se retrouve par son XML-ID, se crée s'il manque, se met à
 jour sinon. Appliquer deux fois donne le même résultat (idempotent). Les
 références (many2one, many2many) sont écrites `{"ref": "module.name"}` et
 résolues à l'application : un pack ne contient jamais d'identifiant numérique.
 
-    odoo_pack.py export --db <base> [--module studio_customization|__export__|cfg_<projet>] --out pack.json
+    odoo_pack.py export --db <base> [--module studio_customization] [--since <ISO>] [--only <fichier>] --out pack.json
     odoo_pack.py apply  pack.json --db <base>            # copie locale ou stack (admin/admin)
     odoo_pack.py apply  pack.json --instance <projet> <nom> [--allow-write]   # staging / production
     odoo_pack.py diff   pack.json --db <base>            # ce que l'application changerait
@@ -108,7 +116,17 @@ class Target:
         return rows[0]["res_id"] if rows else None
 
     def name_record(self, model: str, res_id: int, xmlid: str, allow_write: bool) -> None:
+        """Donne au nouvel enregistrement le XML-ID du pack. En contexte studio, Odoo a
+        déjà créé un XML-ID `<libellé>_<uuid>` : on le renomme pour garder celui du pack
+        (même nom sur toutes les bases), sinon on le crée."""
         module, _, name = xmlid.partition(".")
+        existing = self.call("ir.model.data", "search_read",
+                             [("model", "=", model), ("res_id", "=", res_id)], fields=["id"], limit=1)
+        if existing:
+            self.call("ir.model.data", "write", [existing[0]["id"]],
+                      {"module": module, "name": name, "noupdate": True}, allow_write=allow_write,
+                      context=STUDIO_CTX)
+            return
         self.call("ir.model.data", "create",
                   {"module": module, "name": name, "model": model, "res_id": res_id, "noupdate": True},
                   allow_write=allow_write)
@@ -134,9 +152,18 @@ def exportable_fields(target: Target, model: str) -> dict:
     return out
 
 
-def export(target: Target, module: str, out: Path) -> int:
-    entries = target.call("ir.model.data", "search_read", [("module", "=", module)],
+STUDIO_CTX = {"studio": True}
+
+
+def export(target: Target, module: str, out: Path, since: str | None = None,
+           only: set[str] | None = None) -> int:
+    domain = [("module", "=", module)]
+    if since:
+        domain.append(("create_date", ">=", since))
+    entries = target.call("ir.model.data", "search_read", domain,
                           fields=["model", "res_id", "name", "noupdate"], order="id")
+    if only is not None:
+        entries = [e for e in entries if f"{module}.{e['name']}" in only]
     if not entries:
         print(f"aucun enregistrement dans le module d'identifiants « {module} » sur {target.label}")
         return 1
@@ -185,7 +212,7 @@ def export(target: Target, module: str, out: Path) -> int:
                     values[name] = val
             records.append({"model": model, "xml_id": f"{module}.{e['name']}",
                             "noupdate": bool(e["noupdate"]), "values": values})
-    pack = {"format": "odoo-pack/1", "source": target.label, "module": module,
+    pack = {"format": "odoo-pack/1", "source": target.label, "module": module, "since": since,
             "series": target.call("ir.module.module", "search_read", [("name", "=", "base")],
                                   fields=["latest_version"])[0]["latest_version"],
             "records": records}
@@ -253,7 +280,7 @@ def apply(target: Target, pack: dict, dry_run: bool, allow_write: bool) -> int:
         if rid is None:
             print(f"  + {model} {xmlid}")
             if not dry_run:
-                rid = target.call(model, "create", vals, allow_write=allow_write)
+                rid = target.call(model, "create", vals, allow_write=allow_write, context=STUDIO_CTX)
                 if isinstance(rid, list):   # create([vals]) renvoie une liste selon la série
                     rid = rid[0]
                 target.name_record(model, rid, xmlid, allow_write)
@@ -273,7 +300,8 @@ def apply(target: Target, pack: dict, dry_run: bool, allow_write: bool) -> int:
         print(f"  ~ {model} {xmlid} : " + ", ".join(
             f"{k} ({str(a)[:40]!r} → {str(b)[:40]!r})" for k, (a, b) in changes.items()))
         if not dry_run:
-            target.call(model, "write", [rid], {k: vals[k] for k in changes}, allow_write=allow_write)
+            target.call(model, "write", [rid], {k: vals[k] for k in changes}, allow_write=allow_write,
+                        context=STUDIO_CTX)
         updated += 1
     verb = "à créer / à modifier / inchangés" if dry_run else "créés / modifiés / inchangés"
     print(f"{created} / {updated} / {unchanged} {verb} sur {target.label}")
@@ -298,6 +326,8 @@ def main(argv: list[str]) -> int:
     db = take("--db"); url = take("--url"); login = take("--login") or "admin"
     password = take("--password") or "admin"; instance = take("--instance", 2)
     module = take("--module") or "studio_customization"; out = take("--out")
+    since = take("--since"); only_file = take("--only")
+    only = set(Path(only_file).read_text(encoding="utf-8").split()) if only_file else None
     allow_write = "--allow-write" in args
     if allow_write:
         args.remove("--allow-write")
@@ -311,7 +341,7 @@ def main(argv: list[str]) -> int:
         return 2
 
     if cmd == "export":
-        return export(target, module, Path(out or f"pack_{module}.json"))
+        return export(target, module, Path(out or f"pack_{module}.json"), since, only)
     if cmd == "xmlid":
         model, res_id, xmlid = args[0], int(args[1]), args[2]
         target.name_record(model, res_id, xmlid, allow_write)

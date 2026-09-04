@@ -50,8 +50,9 @@ Règles :
   module ou Studio existant → Studio ; modules seuls → module ; Odoo Online →
   Studio) sauf demande explicite ; les limites de Studio (`safe_eval`, pas de
   JS, pas de surcharge, pas de test Python) sont annoncées avant de faire. Le
-  livrable Studio est un pack versionné (`odoo_pack.py`), appliqué par
-  identifiant externe, jamais en production sans confirmation.
+  livrable Studio est un pack versionné (`odoo_pack.py`), créé et appliqué en
+  contexte `studio` — indiscernable d'un travail fait dans Studio —, jamais en
+  production sans confirmation.
 - **Un ticket passe la main selon son verdict** : usage ou configuration → réponse
   seule ; données → réparation prouvée sur la copie, confirmée par l'humain pour la
   production ; bug avec test rouge → `/odoo-new` reprend à l'étape 2 sans rejouer
