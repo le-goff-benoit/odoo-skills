@@ -95,6 +95,17 @@ mv <racine>/.odoo-agents/revue_en_cours.md "$RELEASE/revue_fonctionnelle.md"   #
 Ne t'arrête pas pour une contradiction majeure ou mineure : consigne-la comme
 hypothèse retenue dans la spec, et continue.
 
+### Entrée par un ticket de support
+
+Si la demande est un diagnostic d'`odoo-support` (fichier
+`changelog/<release>/support/…_ticket-NNNN.md`) classé **bug**, avec une cause
+prouvée et un **test rouge** dans le module : saute l'étape 1. Le diagnostic est
+la spec — correction attendue, critère d'acceptation « le test passe ». Ligne
+d'état : `[1/4 analyst] sauté — diagnostic support #NNNN, cause prouvée, test rouge`.
+Exceptions qui ramènent l'analyste : correction qui touche aux droits, à la
+compta, à la facturation ou aux données existantes ; diagnostic sans test
+rouge ; ticket classé « évolution déguisée ».
+
 ### Reprise après une question bloquante
 
 Quand l'humain répond dans la conversation, **on ne rejoue pas l'étape 1**.

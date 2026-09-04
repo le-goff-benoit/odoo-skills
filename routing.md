@@ -27,6 +27,7 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 | Nature de la demande | Réponse |
 |---|---|
 | **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « Odoo sait-il faire… », arbitrer une règle métier | `odoo-analyst` **seul**, aucun code |
+| **Ticket de support** — « l'utilisateur voit… », « ça ne marche plus », « pourquoi… », un numéro de ticket | `odoo-support` **seul** : diagnostic prouvé, classement, contournement, réponse client ; passe la main selon le verdict (voir ci-dessous) |
 | **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-new`** : fonctionnel → dev → QA de tâche → journal, dans la release ouverte (ouverte au besoin) |
 | **Clôture / livraison** — « ferme la release », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
 | **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode release) |
@@ -43,6 +44,12 @@ Règles :
   des fichiers touchés, install/update et tests ciblés ; la recette complète
   se joue une fois, à la clôture. Une tâche qui touche aux droits, à la compta,
   à la facturation ou aux données existantes se valide tout de suite.
+- **Un ticket passe la main selon son verdict** : usage ou configuration → réponse
+  seule ; données → réparation prouvée sur la copie, confirmée par l'humain pour la
+  production ; bug avec test rouge → `/odoo-new` reprend à l'étape 2 sans rejouer
+  l'analyste (sauf droits, compta, facturation, données existantes) ; évolution
+  déguisée → `odoo-analyst`. Une release contient du dev et des tickets ; la
+  clôture documente les deux.
 - **Aucun livrable documentaire avant la clôture** : ni guide, ni capture, ni
   communication pendant qu'une release est ouverte, sauf demande explicite. Un écran
   qui change se note dans « Ce que l'utilisateur verra » et attend `/odoo-close`.

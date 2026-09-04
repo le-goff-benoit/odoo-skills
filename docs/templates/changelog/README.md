@@ -17,6 +17,14 @@ sans vocabulaire technique>.
 <Une décision qui n'allait pas de soi, expliquée avec l'alternative écartée et la raison.
 À supprimer si la release n'en comporte aucune.>
 
+## Tickets de support
+
+| Ticket | Symptôme | Classement | Issue |
+|---|---|---|---|
+| #NNNN | <ce que l'utilisateur observait> | <usage / configuration / données / bug> | <réponse envoyée / données réparées le … / corrigé dans cette release> |
+
+<Section à supprimer si la release ne traite aucun ticket. Diagnostics dans `support/`.>
+
 ## Fichiers
 
 | Fichier | Nature |

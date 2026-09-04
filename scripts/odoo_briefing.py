@@ -164,7 +164,7 @@ def lot_status(root: Path) -> str:
         return ""
     current = run([str(lot_script), "current", str(root)])
     if not current:
-        return (f"aucun(e) {lot_label(root)} ouvert(e) — s'ouvre après le verdict de l'analyste "
+        return (f"aucune {lot_label(root)} ouverte — s'ouvre après le verdict de l'analyste ou du support "
                 "(`odoo-release.sh open <projet> \"<titre>\"`)")
     release = Path(current)
     points = run([str(lot_script), "points", str(release)])
@@ -173,6 +173,36 @@ def lot_status(root: Path) -> str:
     if points:
         lines += ["  " + p for p in points.splitlines()]
     return "\n".join(lines)
+
+
+def deployed_versions(root: Path, modules: list[str]) -> list[str]:
+    """Version des modules du projet sur chaque instance déclarée (lecture seule, 6 s max)."""
+    if not modules:
+        return []
+    try:
+        import odoo_instance  # noqa: PLC0415
+    except ImportError:
+        return []
+    out = []
+    import socket
+    old = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(6)
+    try:
+        for inst in odoo_instance.Instance.load_all(root.name).values():
+            if inst.kind not in ("production", "staging") or not inst.secret:
+                continue
+            try:
+                rows = inst.execute("ir.module.module", "search_read",
+                                    [("name", "in", modules)],
+                                    fields=["name", "installed_version", "state"])
+            except Exception as exc:  # noqa: BLE001 — hors ligne, refus, timeout
+                out.append(f"{inst.name} : injoignable ({type(exc).__name__})")
+                continue
+            parts = [f"`{r['name']}` {r['installed_version'] or r['state']}" for r in rows]
+            out.append(f"{inst.name} ({inst.kind}) : " + (", ".join(parts) or "aucun module du projet"))
+    finally:
+        socket.setdefaulttimeout(old)
+    return out
 
 
 def restored_dbs(series: str) -> str:
@@ -222,7 +252,7 @@ def main(argv: list[str]) -> int:
         print("\n".join(out))
         return 0
 
-    out.append(f"- **{lot_label(root).capitalize()}** (mot du projet) : {lot_status(root)}")
+    out.append(f"- **{lot_label(root).capitalize()}** : {lot_status(root)}")
     inst = HOME / "scripts" / "odoo_instance.py"
     declared = run([sys.executable, str(inst), "list", root.name]) if inst.is_file() else ""
     if declared and "aucune" not in declared.lower():
@@ -231,6 +261,16 @@ def main(argv: list[str]) -> int:
     dbs = restored_dbs(series)
     if dbs:
         out.append(f"- **Bases sur le stack {series}** : {dbs}")
+    project_md = agents / "PROJECT.md"
+    modules = re.findall(r"^### `([^`]+)`", project_md.read_text(encoding="utf-8", errors="replace"), re.M) \
+        if project_md.is_file() else []
+    for line in deployed_versions(root, modules):
+        out.append(f"- **Déployé** — {line}")
+    repo_versions = re.findall(r"^### `([^`]+)`\n\n- version `([^`]+)`",
+                               project_md.read_text(encoding="utf-8", errors="replace"), re.M) \
+        if project_md.is_file() else []
+    if repo_versions and any(l.startswith("- **Déployé**") for l in out):
+        out.append("- **Dépôt** : " + ", ".join(f"`{m}` {v}" for m, v in repo_versions))
 
     forms = [FEATURE_LABELS[f] for f in odoo_series.FEATURES if odoo_series.has(series, f)]
     against = [INVERSE[f] for f in INVERSE if not odoo_series.has(series, f)]

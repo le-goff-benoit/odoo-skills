@@ -17,6 +17,11 @@ Réponds dans la langue du client. RubixComm : français ; Stucki : anglais ; pa
 défaut le français, avec les conventions suisses (CHF, dates `28.08.2026`, tutoiement
 seulement si c'est l'usage avec le contact).
 
+Une release contient du développement et des tickets de support ; les
+livrables couvrent les deux : un ticket d'usage devient un « Bon à savoir », une
+correction visible une section illustrée, et la communication cite les tickets
+clos par leur numéro.
+
 ## Les cinq livrables
 
 | Livrable | Forme | Quand |

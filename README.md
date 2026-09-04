@@ -51,6 +51,7 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 |---|---|---|
 | `odoo-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
 | `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant la release |
+| `odoo-support` | Support : reproduit un ticket sur l'enregistrement réel (production en lecture seule, copie client), prouve la cause, classe (usage, configuration, données, bug, évolution), mesure l'impact, écrit le test rouge et le brouillon de réponse ; passe la main selon le verdict | à chaque ticket |
 | `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **release** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
 | `/odoo-new` | La chaîne sur une demande : briefing → release → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
 | `/odoo-close` | Clôture de la release : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
@@ -113,6 +114,7 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 ├── roles/                  ← les prompts, SOURCE UNIQUE
 │   ├── functional-review.md
 │   ├── implementation.md
+│   ├── support.md          ← odoo-support (tickets)
 │   ├── qa-review.md
 │   ├── orchestration.md    ← /odoo-new
 │   ├── release-close.md        ← /odoo-close

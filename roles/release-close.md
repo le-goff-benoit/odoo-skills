@@ -21,8 +21,13 @@ RELEASE=$(~/.odoo19-agents/scripts/odoo-release.sh current <racine>)
 git -C <racine> status --short                           # fichiers non suivis dont le code dépend ?
 ```
 
-Annonce : **projet, série, release, points (réalisés / à faire), modules touchés,
-copie client disponible ou non.**
+Annonce : **projet, série, release, points (réalisés / à faire), tickets de
+support traités, modules touchés, copie client disponible ou non.**
+
+Les points `[support #NNNN]` font partie de la livraison : une réponse, une
+réparation de données confirmée ou une correction de code. Leur diagnostic est
+dans `support/` ; le test `test_support_NNNN.py` fait partie de la suite jouée
+par la recette.
 
 Un point encore « à faire » n'empêche pas la clôture : il est marqué
 **différé** dans `demande.md` (« Décisions de périmètre ») et retiré de la
@@ -77,8 +82,12 @@ vide : guide illustré DOCX + PDF à la charte, `communication_client.txt`.
 Applique `~/.odoo19-agents/roles/docs.md`. Le générateur du guide reste dans le
 release.
 
-Sans écran modifié : `communication_client.txt` seul si la release est déployé chez
+Sans écran modifié : `communication_client.txt` seul si la release est déployée chez
 le client, rien sinon.
+
+Les tickets nourrissent aussi les livrables : une réponse d'usage devient un
+« Bon à savoir » du guide, une correction visible une section illustrée, et la
+communication client cite chaque ticket clos par son numéro.
 
 ## Étape 4 — README final, version, commit proposé
 
@@ -89,6 +98,8 @@ Réécris `$RELEASE/README.md` dans sa forme finale, d'après le gabarit
   l'utilisateur voit ou peut faire) ;
 - **versions de départ et livrée lues dans les manifests** (`git show
   $(cat $RELEASE/.base):<module>/__manifest__.py` pour le départ) ;
+- « Tickets de support » : un tableau numéro · symptôme · classement · issue,
+  d'après `support/` ;
 - « Fichiers » d'après `odoo-release.sh changed` ;
 - « Validation » recopiée de `recette.md` — chaque ligne correspond à quelque
   chose qui a été exécuté ;

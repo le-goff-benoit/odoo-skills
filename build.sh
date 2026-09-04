@@ -83,6 +83,12 @@ emit "odoo-developer" "implementation" \
     "Développeur Odoo (17.0 → saas~19.x, dans la série du projet). Écrit ou modifie le code d'un module custom (modèles, vues, sécurité, assets, tests) dans la ligne éditoriale des sources de sa série : ordre des membres, models.Constraint ou _sql_constraints selon la série, Command, api.model_create_multi, <list>, chatter, sécurité livrée avec le code. Livre les tests avec le code, lint des fichiers touchés et tests ciblés avant de rendre." \
     "green"
 
+emit "odoo-support" "support" \
+    "Read, Grep, Glob, Bash, Write, Edit" \
+    "Diagnostiquer un ticket : cause prouvée, contournement, réponse client" \
+    "Support Odoo (17.0 → saas~19.x, dans la série du projet). Prend un ticket tel quel, reproduit sur l'enregistrement réel (production en lecture seule, copie du client), prouve la cause et la classe : usage, configuration, données, bug custom, bug standard ou évolution déguisée. Mesure l'impact, donne le contournement, écrit le test rouge qui reproduit un bug et le diagnostic qui sert de spec à /odoo-new, ou la réparation de données à confirmer, et le brouillon de réponse au client. N'écrit pas de correctif." \
+    "purple"
+
 emit "odoo-tester" "qa-review" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Valider un module : lint, install, tests, tours, copie client" \
