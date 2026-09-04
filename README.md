@@ -156,7 +156,7 @@ Créé par `scripts/odoo_project_scan.py`, à la racine du projet client :
 
 | Fichier | Contenu | Écrit par |
 |---|---|---|
-| `config` | `series = 18.0` — fait autorité sur la détection | le scan, puis l'humain |
+| `config` | `series = 18.0` — fait autorité sur la détection ; `lot_label = release` si le projet dit « release » | le scan, puis l'humain |
 | `PROJECT.md` | **relevé** régénérable (modules, modèles, dépendances, sécurité, tests, dette lint, zones chaudes git, lots) + **compréhension** écrite à la main (métier, décisions actées, pièges connus), jamais écrasée | le scan / les agents |
 | `JOURNAL.md` | une entrée par intervention, **quinze lignes au plus** : demande, fait, verdict, **Appris**, reste ouvert | le QA, la clôture |
 

@@ -179,10 +179,10 @@ emit_command "odoo-close" "lot-close" \
     "Clôture un lot de changelog Odoo : recette complète outillée (base neuve, suite de tests entière, tours, désinstallation, mise à niveau sur la copie du client), recette navigateur et captures, livrables client (guide, communication), README final avec versions lues dans les manifests, message de commit proposé, capitalisation dans le journal. Ne clôture pas si un contrôle est rouge."
 
 emit_command "odoo-feedback" "retex" \
-    "[période ou projet]" \
-    'Périmètre demandé : $ARGUMENTS' \
-    "Améliorer le dispositif : leçons des journaux → guide, lint, rôles" \
-    "Retour d’expérience sur le dispositif Odoo : relit les journaux de projet, vérifie que le guide et la matrice des séries disent encore vrai au regard des sources, promeut les leçons récurrentes dans LESSONS.md et les traduit en motifs de lint ou en règles de rôle, puis reconstruit les profils."
+    "[période | projet | \"remarque à retenir\"]" \
+    'Périmètre demandé, ou remarque de l'"'"'humain à retenir : $ARGUMENTS' \
+    "Retenir une remarque, ou améliorer le dispositif depuis les journaux" \
+    "Retour d’expérience sur le dispositif Odoo. Avec une remarque en argument (« pas comme ça », « chez ce client… ») : l'enregistre dans le journal du projet comme leçon candidate, sans rien d'autre. Sans argument : relit les journaux, vérifie que le guide et la matrice des séries disent encore vrai au regard des sources, promeut les leçons récurrentes dans LESSONS.md et les traduit en motifs de lint ou en règles de rôle, puis reconstruit les profils."
 
 # --- Skills (même contenu pour Claude Code et Codex) -------------------------
 # emit_skill <slug> <role> <description>

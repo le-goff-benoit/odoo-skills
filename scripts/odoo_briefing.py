@@ -147,13 +147,25 @@ def lessons(series: str) -> list[str]:
     return out
 
 
+def lot_label(root: Path) -> str:
+    """Le mot du projet pour un lot de changelog (« release » chez NECA), « lot » par défaut."""
+    config = root / ".odoo-agents" / "config"
+    if config.is_file():
+        for line in config.read_text(encoding="utf-8", errors="replace").splitlines():
+            found = re.match(r"\s*lot_label\s*[=:]\s*(\S+)", line)
+            if found:
+                return found[1]
+    return "lot"
+
+
 def lot_status(root: Path) -> str:
     lot_script = HOME / "scripts" / "odoo-lot.sh"
     if not lot_script.is_file():
         return ""
     current = run([str(lot_script), "current", str(root)])
     if not current:
-        return "aucun lot ouvert (`odoo-lot.sh open <projet> \"<titre>\"` pour en ouvrir un)"
+        return (f"aucun(e) {lot_label(root)} ouvert(e) — s'ouvre après le verdict de l'analyste "
+                "(`odoo-lot.sh open <projet> \"<titre>\"`)")
     lot = Path(current)
     points = run([str(lot_script), "points", str(lot)])
     base = (lot / ".base").read_text().strip() if (lot / ".base").is_file() else "?"
@@ -210,7 +222,7 @@ def main(argv: list[str]) -> int:
         print("\n".join(out))
         return 0
 
-    out.append(f"- **Lot** : {lot_status(root)}")
+    out.append(f"- **{lot_label(root).capitalize()}** (mot du projet) : {lot_status(root)}")
     inst = HOME / "scripts" / "odoo_instance.py"
     declared = run([sys.executable, str(inst), "list", root.name]) if inst.is_file() else ""
     if declared and "aucune" not in declared.lower():

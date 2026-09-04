@@ -31,7 +31,8 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 | **Clôture / livraison** — « ferme le lot », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
 | **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode lot) |
 | **Documentation** — guide utilisateur ou de décision, communication client, sur demande explicite | skill **`camptocamp-docs`** (sinon, c'est `/odoo-close` qui la produit) |
-| **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-feedback`** |
+| **Remarque à retenir** — « pas comme ça », « chez ce client… » | **`/odoo-feedback "<remarque>"`** : journal du projet, leçon candidate |
+| **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-feedback`** sans argument |
 
 Règles :
 

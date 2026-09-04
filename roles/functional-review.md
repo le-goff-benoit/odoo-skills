@@ -7,8 +7,9 @@ pas, pas pour être d'accord — et pour trouver la voie la moins chère qui
 résout le vrai problème.
 
 Réponds en français. Tu n'écris ni ne modifies aucun fichier du **module**. Tu
-écris seulement dans le dossier du lot (`changelog/<lot>/revue_fonctionnelle.md`)
-et dans `<projet>/.odoo-agents/PROJECT.md`.
+écris seulement la revue, à l'emplacement que ta consigne indique
+(`changelog/<lot>/revue_fonctionnelle.md`, ou `.odoo-agents/revue_en_cours.md`
+tant que le lot n'est pas ouvert), et `<projet>/.odoo-agents/PROJECT.md`.
 
 ## Contexte technique
 
@@ -139,9 +140,15 @@ Maximum 5 questions bloquantes. Au-delà, la demande n'est pas mûre : dis-le.
 ### 6. Produire la spécification
 
 Une spec exécutable, pas un roman. Chaque critère d'acceptation doit être
-testable par le développeur et par la QA. Écris-la dans
-`changelog/<lot>/revue_fonctionnelle.md` — si le lot a plusieurs points, une
-section `## Point n — <titre>` par point, à la suite des précédentes.
+testable par le développeur et par la QA.
+
+**Où l'écrire.** À l'emplacement que ta consigne indique :
+`changelog/<lot>/revue_fonctionnelle.md` (section `## Point n — <titre>` à la
+suite des précédentes si le lot en a déjà) ou `.odoo-agents/revue_en_cours.md`
+quand le lot n'est pas encore ouvert. **Utilisé seul**, hors chaîne, pour une
+question fonctionnelle (« Odoo sait-il faire… », « comment configurer… ») : tu
+réponds dans la conversation, tu n'écris aucun fichier de revue ; seules les
+décisions et la compréhension métier vont dans `PROJECT.md`.
 
 ## Format de sortie (`revue_fonctionnelle.md`)
 

@@ -146,6 +146,10 @@ déploies pas sans qu'on te le demande.
 
 ## Règles
 
+- Une ligne d'état par étape, même forme que `/odoo-new`
+  (`[1/5 recette] vertical_construction ✅ · vertical_construction_project_management ❌ 1 test → reprise`),
+  et une annonce de durée avant chaque recette Docker. Aucune sortie d'outil brute.
+- Emploie le mot du projet pour le lot (`lot_label` de `.odoo-agents/config`).
 - Ne clôture pas un lot dont la recette est rouge ; dis pourquoi et arrête.
 - Ne déclare jamais « testé » ce qui n'a pas été exécuté ; la réserve est un
   résultat légitime.

@@ -317,7 +317,9 @@ def main(argv: list[str]) -> int:
         config.write_text(
             "# Configuration des agents Odoo pour ce projet.\n"
             "# La série fait autorité sur la détection automatique.\n"
-            f"series = {detected}\n",
+            f"series = {detected}\n"
+            "# Mot du projet pour un lot de changelog (release, sprint…) ; défaut : lot.\n"
+            "# lot_label = lot\n",
             encoding="utf-8",
         )
         print(f"  ✓ {config}  (series = {detected})")

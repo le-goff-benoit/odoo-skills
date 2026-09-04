@@ -7,6 +7,29 @@ la matrice des séries, les motifs de lint, les rôles.
 Réponds en français. Une amélioration qui ne se traduit pas par un fichier
 modifié n'a pas eu lieu.
 
+## Mode remarque — quand l'argument est une phrase de l'humain
+
+Si l'argument n'est ni vide, ni une période, ni un nom de projet, mais une
+**remarque** (« pas comme ça », « chez ce client la TVA se calcule sur… »,
+« ne jamais toucher aux séquences ici »), tu ne lances pas le retex complet :
+
+1. Identifie le projet courant (`odoo_briefing.py .` ou le chemin donné).
+2. Écris une entrée dans son `.odoo-agents/JOURNAL.md` :
+   ```markdown
+   ## AAAA-MM-JJ — Remarque de l'humain
+   **Dit** : « <la remarque, telle quelle> »
+   **Contexte** : <ce qui venait d'être fait, en une ligne>
+   **Appris** : <la règle qu'elle implique, en une phrase impérative>
+   **Candidate LESSONS** : oui / non — <pourquoi>
+   ```
+3. Si la règle est durable pour ce projet, ajoute-la à « Pièges connus » ou
+   « Décisions actées » de `PROJECT.md`.
+4. Si elle dépasse le projet, dis-le : elle sera promue au prochain retex complet.
+
+Trois lignes de compte-rendu : où c'est écrit, la règle retenue, candidate ou non.
+Les corrections de l'humain sont la matière première la plus fiable du
+dispositif ; une remarque qui reste dans la conversation est perdue.
+
 ## 1. Relire ce qui s'est passé
 
 ```bash

@@ -50,20 +50,19 @@ journal, les leçons applicables et les formes attendues dans cette série. S'il
 signale l'absence de `.odoo-agents/`, crée-le d'abord :
 `~/.odoo19-agents/scripts/odoo_project_scan.py <racine_du_projet>`.
 
-Annonce en une ligne : **projet, série, origine de la série, lot, modules
-concernés**. Toutes les étapes suivantes travaillent dans cette série.
-
-Puis le lot :
+Annonce en une ligne : **projet, série, origine de la série, lot ouvert ou
+non, modules concernés**. Toutes les étapes suivantes travaillent dans cette
+série.
 
 ```bash
-LOT=$(~/.odoo19-agents/scripts/odoo-lot.sh current <racine>)
-# Aucun lot ouvert ? on en ouvre un — titre court, orienté résultat métier.
-LOT=$(~/.odoo19-agents/scripts/odoo-lot.sh open <racine> "<titre>")
-# La demande, telle quelle, datée, dans demande.md ; puis un point dans le suivi.
-~/.odoo19-agents/scripts/odoo-lot.sh add "$LOT" "<point en une ligne>"
+LOT=$(~/.odoo19-agents/scripts/odoo-lot.sh current <racine>)   # vide s'il n'y en a pas
 ```
 
-Copie la demande d'origine dans `$LOT/demande.md` **sans la reformuler**.
+**On n'ouvre pas de lot avant le verdict de l'analyste.** Une demande qui se
+règle par la configuration ou qui bute sur une question bloquante ne doit pas
+laisser un dossier vide derrière elle. La revue s'écrit dans le lot s'il est
+déjà ouvert, sinon dans `<racine>/.odoo-agents/revue_en_cours.md`, que
+l'étape 1 déplacera au bon moment.
 
 Cherche aussi une **copie du client** (le briefing liste les bases du stack et
 les instances déclarées). Elle sert aux trois étapes. Si elle manque et que la
@@ -72,21 +71,38 @@ maintenant — sans bloquer la revue fonctionnelle.
 
 ## Étape 1 — Revue fonctionnelle (`odoo-analyst`)
 
-Rôle : `~/.odoo19-agents/roles/functional-review.md`. Il écrit sa revue dans
-`$LOT/revue_fonctionnelle.md` (une section par point si le lot en a plusieurs)
-et ses décisions durables dans `PROJECT.md`.
+Rôle : `~/.odoo19-agents/roles/functional-review.md`. Sa consigne lui donne
+le briefing, la demande, et **le chemin où écrire la revue** :
+`$LOT/revue_fonctionnelle.md` (section `## Point n` si le lot en a déjà) ou
+`.odoo-agents/revue_en_cours.md` s'il n'y a pas de lot. Ses décisions durables
+vont dans `PROJECT.md`.
 
 Puis **décide, et annonce ta décision** :
 
 | Issue de la revue | Suite |
 |---|---|
-| Verdict **ÇA EXISTE** — le standard de la série (ou la base du client) couvre le besoin | **STOP.** Livre la revue, explique la configuration à faire, ne développe pas. Le point est marqué « configuration » dans le suivi du lot. |
-| Au moins une **question bloquante** | **STOP.** Livre la revue et les questions. N'invente pas la réponse. |
-| Contradiction **bloquante** non levable | **STOP.** Livre la revue avec le risque. |
-| Spec saine (y compris demande triviale expédiée en une ligne) | **CONTINUE** à l'étape 2. |
+| Verdict **ÇA EXISTE** — le standard de la série (ou la base du client) couvre le besoin | **STOP après enregistrement.** Ouvre le lot s'il n'existe pas, ajoute la demande à `demande.md` et un point « configuration » au suivi, déplace la revue dans le lot. Explique la configuration à faire, ne développe pas. |
+| Au moins une **question bloquante** | **STOP.** Livre les questions. N'invente pas la réponse. Pas de lot : la revue attend dans `revue_en_cours.md`. |
+| Contradiction **bloquante** non levable | **STOP.** Livre la revue avec le risque. Pas de lot. |
+| Spec saine (y compris demande triviale expédiée en une ligne) | **CONTINUE** : ouvre le lot s'il n'existe pas (titre court, orienté résultat métier), copie la demande **telle quelle** dans `demande.md`, ajoute le point, déplace la revue dans le lot. Puis étape 2. |
+
+```bash
+LOT=$(~/.odoo19-agents/scripts/odoo-lot.sh open <racine> "<titre>")      # si aucun lot
+~/.odoo19-agents/scripts/odoo-lot.sh add "$LOT" "<point en une ligne>"
+mv <racine>/.odoo-agents/revue_en_cours.md "$LOT/revue_fonctionnelle.md"   # ou concaténation si le fichier existe
+```
 
 Ne t'arrête pas pour une contradiction majeure ou mineure : consigne-la comme
 hypothèse retenue dans la spec, et continue.
+
+### Reprise après une question bloquante
+
+Quand l'humain répond dans la conversation, **on ne rejoue pas l'étape 1**.
+Écris sa réponse dans la revue (section « Hypothèses retenues » → devient
+« Décisions »), puis applique la ligne CONTINUE du tableau : ouverture du lot,
+demande, point, déplacement de la revue, étape 2. Si la réponse change le
+périmètre au point d'invalider la revue, dis-le et relance l'analyste sur le
+seul point qui change.
 
 ## Étape 2 — Implémentation (`odoo-developer`)
 
@@ -152,12 +168,44 @@ masque pas un échec.
 Les anomalies majeures et mineures ne déclenchent pas de reprise : elles sont
 listées dans le compte-rendu final pour arbitrage, et dans `qa.md`.
 
+## Ce que l'utilisateur voit pendant la chaîne
+
+Il ne voit ni les sous-agents ni les outils : il voit **tes lignes d'état** et
+le compte-rendu. À chaque franchissement d'étape, une ligne, toujours de la
+même forme, sur Claude comme sur Codex :
+
+```
+[0/4 briefing]  rubixcomm_odoo · 19.0 (config) · lot ouvert 2026-09-04_01 · copie client : rubix_20260904
+[1/4 analyst]   PARTIEL — le standard notifie, l'historique SAV manque → je continue
+[2/4 developer] 3 fichiers, 4 tests · lint --changed : 0 erreur · ~2 min de QA Docker à suivre
+[3/4 tester]    VALIDÉ — install/update OK, 4/4 tests, critères 5/5 → journal
+[4/4 journal]   entrée écrite · PROJECT.md : 1 piège ajouté
+```
+
+Règles de la ligne : le verdict en majuscules quand il y en a un, la raison en
+une proposition, la flèche vers ce qui suit. **Avant tout ce qui dure** (tests
+Docker, restauration, recette), annonce-le avec une durée approximative :
+un silence de trois minutes sans explication est une panne pour celui qui lit.
+Aucun extrait de log, aucune sortie d'outil dans la conversation : un chemin
+de fichier suffit.
+
+Emploie le **mot du projet** pour le lot : `lot_label` dans
+`.odoo-agents/config` (« release » chez NECA), « lot » par défaut. Le briefing
+et `odoo-lot.sh` le lisent.
+
 ## Compte-rendu final (court : le détail est dans le lot)
+
+La section **« À décider »** vient en premier quand elle n'est pas vide ; elle
+disparaît sinon. C'est la seule chose que l'humain doit lire s'il ne lit qu'une
+chose.
 
 ```markdown
 # <titre de la demande>
 
 **Projet** <nom> · **série** <X.Y> · **lot** `<dossier>` (point n°<n>) · **modules** <…>
+
+## À décider
+<questions bloquantes, arbitrages, hypothèses posées faute de réponse — ou section absente>
 
 ## Cadrage
 <verdict standard, hypothèses retenues, hors périmètre — trois lignes>
@@ -170,8 +218,8 @@ listées dans le compte-rendu final pour arbitrage, et dans `qa.md`.
 <lint --changed, install/update, tests ciblés n/n>
 | Critère d'acceptation | Couvert par | État |
 
-## Reste à faire / arbitrages
-<anomalies non corrigées, questions ouvertes, leçon candidate>
+## Reste à faire
+<anomalies non corrigées, leçon candidate>
 
 ## Lot
 <n> point(s) dans le lot, <m> réalisé(s). Clôture et recette complète : `/odoo-close`.
@@ -179,7 +227,7 @@ listées dans le compte-rendu final pour arbitrage, et dans `qa.md`.
 
 ## Règles
 
-- Annonce l'étape en cours avant de la commencer (`── Étape 2/4 : implémentation`).
+- Une ligne d'état par étape (forme ci-dessus), jamais de sortie d'outil brute.
 - Annonce la série cible dès l'étape 0 et n'en change plus en cours de route.
 - Un arrêt aux étapes 1 ou 3 est un résultat légitime, pas un échec : dis pourquoi.
 - Ne déclare jamais « testé » ce qui n'a pas été exécuté. Si Docker n'est pas

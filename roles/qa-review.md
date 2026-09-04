@@ -183,6 +183,9 @@ En complément :
 
 Mode tâche → section datée ajoutée à `changelog/<lot>/qa.md`. Mode lot →
 `qa.md` complété + `recette.md` (produit par le script) + `tests_navigateur.md`.
+**Utilisé seul sans lot ouvert** (« valide ce module ») : le verdict reste dans
+la conversation, `recette.md` va dans `stack/artifacts/`, et seuls le journal et
+`PROJECT.md` sont écrits — pas de dossier de changelog créé pour une validation.
 
 ```markdown
 ## <date> — <tâche ou lot> — mode <tâche|lot>

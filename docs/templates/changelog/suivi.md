@@ -1,10 +1,10 @@
 <!-- lot ouvert -->
 # <Titre du lot>
 
-Lot ouvert le <jj mois aaaa>. **Suivi vivant** tant que le lot est ouvert : une
-ligne par point, son test ciblé, son état. La recette complète, les captures et
-les livrables client se font à la clôture (`/odoo-close`), qui réécrit ce
-fichier dans sa forme finale.
+<Lot> ouvert(e) le <jj mois aaaa>. **Suivi vivant** tant que ce <lot> est
+ouvert : une ligne par point, son test ciblé, son état. La recette complète, les
+captures et les livrables client se font à la clôture (`/odoo-close`), qui
+réécrit ce fichier dans sa forme finale.
 
 ## Points
 

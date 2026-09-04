@@ -56,7 +56,10 @@ case "$cmd" in
         LOT="$ROOT/changelog/${DAY}_$(printf '%02d' "$NN")_$(slugify "$TITLE")"
         mkdir -p "$LOT/captures"
         git -C "$ROOT" rev-parse HEAD 2>/dev/null > "$LOT/.base" || echo "sans-git" > "$LOT/.base"
+        LABEL="$(sed -n 's/^ *lot_label *[=:] *\([^ ]*\).*/\1/p' "$ROOT/.odoo-agents/config" 2>/dev/null | head -1)"
+        LABEL="${LABEL:-lot}"
         sed -e "s/<Titre du lot>/$TITLE/" -e "s/<jj mois aaaa>/$(date '+%d.%m.%Y')/" \
+            -e "s/<lot>/$LABEL/g" -e "s/<Lot>/${LABEL^}/g" \
             "$TEMPLATES/suivi.md" > "$LOT/README.md"
         printf '# Demande\n\n<!-- Copier chaque demande telle quelle, datée. Ne pas reformuler. -->\n\n' \
             > "$LOT/demande.md"
