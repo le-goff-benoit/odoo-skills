@@ -32,6 +32,7 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 | **Clôture / livraison** — « ferme la release », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
 | **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode release) |
 | **Documentation** — guide utilisateur ou de décision, communication client, sur demande explicite | skill **`camptocamp-docs`** (sinon, c'est `/odoo-close` qui la produit) |
+| **Environnement** — « déclare la prod / le staging », « as-tu accès à… » | **`/odoo-env`** : dialogue du bureau, trousseau, vérification ; aucun secret dans la conversation |
 | **Remarque à retenir** — « pas comme ça », « chez ce client… » | **`/odoo-feedback "<remarque>"`** : journal du projet, leçon candidate |
 | **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-feedback`** sans argument |
 
@@ -77,10 +78,10 @@ Règles :
 La voie normale est une **copie locale** de la sauvegarde client :
 `~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test`
 (neutralisée, `admin/admin`, tout y est permis). Sans sauvegarde, l'accès à une
-base distante se **déclare** (`odoo_instance.py add <projet>` : secret dans le
-trousseau du bureau, le reste dans `~/.odoo-agents/instances/`, rien dans un
-dépôt) plutôt que de coller des identifiants dans la conversation ; clé API et
-compte en lecture seule recommandés.
+base distante se **déclare** par **`/odoo-env`** : boîte de dialogue du bureau,
+clé dans le trousseau de la personne, métadonnées sans secret dans
+`<projet>/.odoo-agents/instances.json` (commitées). Jamais un identifiant dans
+la conversation ; clé API et compte en lecture seule recommandés.
 
 **Production — règles absolues** : annonce en clair *« Vous me donnez accès à
 la PRODUCTION de <client>. Je n'y ferai que de la lecture. Toute écriture vous

@@ -22,6 +22,7 @@ python3 ~/.odoo19-agents/scripts/odoo_briefing.py .
 | Développement ou correction | `/odoo-new <demande>` : cadrage → code → QA de tâche → journal, dans la release ouverte |
 | Livrer | `/odoo-close` : recette complète, captures, guide, README de release, commit proposé |
 | Valider un module | `odoo-tester` seul |
+| Déclarer ou vérifier un environnement | `/odoo-env` : dialogue du bureau, clé dans votre trousseau, `instances.json` commité |
 | Remarque à retenir | `/odoo-feedback "<remarque>"` |
 
 - **Release** : toute modification appartient à une release ouverte sous

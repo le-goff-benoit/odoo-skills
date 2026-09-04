@@ -190,6 +190,12 @@ emit_command "odoo-close" "release-close" \
     "Clôturer la release : recette complète, captures, guide, README, commit" \
     "Clôture une release de changelog Odoo : recette complète outillée (base neuve, suite de tests entière, tours, désinstallation, mise à niveau sur la copie du client), recette navigateur et captures, livrables client (guide, communication), README final avec versions lues dans les manifests, message de commit proposé, capitalisation dans le journal. Ne clôture pas si un contrôle est rouge."
 
+emit_command "odoo-env" "env" \
+    "[projet] [add|list|check <nom>|secret <nom>]" \
+    'Projet et action : $ARGUMENTS' \
+    "Déclarer ou vérifier un environnement (prod, staging, test) sans exposer de secret" \
+    "Déclare ou vérifie les environnements Odoo d'un projet (production, staging, test, local) : ouvre une boîte de dialogue du bureau où l'humain saisit URL, base, identifiant et clé API — la clé va directement dans son trousseau GNOME, les métadonnées sans secret dans <projet>/.odoo-agents/instances.json (à commiter). Vérifie l'accès, la version et la cohérence de série. Ne demande, n'affiche et n'écrit jamais un secret."
+
 emit_command "odoo-feedback" "retex" \
     "[période | projet | \"remarque à retenir\"]" \
     'Périmètre demandé, ou remarque de l'"'"'humain à retenir : $ARGUMENTS' \

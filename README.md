@@ -56,6 +56,7 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 | `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **release** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
 | `/odoo-new` | La chaîne sur une demande : briefing → release → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
 | `/odoo-close` | Clôture de la release : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
+| `/odoo-env` | Déclarer ou vérifier un environnement : dialogue du bureau, clé dans le trousseau, métadonnées commitées, vérification de version et de série ; aucun secret dans la conversation | à l'arrivée d'un projet, d'un collègue, d'une clé |
 | `/odoo-feedback` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
 | `camptocamp-docs` (skill) | Guide utilisateur / de décision DOCX + PDF à la charte, communication client, captures depuis la copie locale | à la clôture, ou sur demande |
 
@@ -145,7 +146,7 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 │   ├── odoo-stack.sh       build / up / down / reset / logs / psql / odoo-shell / dbs
 │   ├── odoo-restore.sh     sauvegarde client → base locale neutralisée
 │   ├── odoo-config-inventory.sh  Studio, automatisations, vues, rapports d'une base
-│   ├── odoo_instance.py    accès déclaré aux bases distantes (prod en lecture seule)
+│   ├── odoo_instance.py    environnements : instances.json du projet + trousseau (prod en lecture seule)
 │   ├── odoo-shot.sh / odoo_capture.py / odoo-pdf.sh   captures et PDF réels
 │   └── series-env.sh       bootstrap de série pour les scripts du stack
 ├── build.sh                régénère les profils Claude et Codex depuis roles/
@@ -243,11 +244,13 @@ scripts/odoo-recette.sh mon_module --release <release> --db client_test
 scripts/odoo-restore.sh ~/Downloads/client-2026-08-19.zip --db client_test
 scripts/odoo-config-inventory.sh client_test
 
-# Accès déclaré à une base distante : secret dans le trousseau GNOME (libsecret),
-# métadonnées dans ~/.odoo-agents/instances/<projet>.json ; production en lecture seule
-scripts/odoo_instance.py add mon_projet
-scripts/odoo_instance.py check mon_projet staging
-scripts/odoo_instance.py migrate mon_projet      # secrets JSON existants → trousseau
+# Environnements : /odoo-env, ou directement — boîte de dialogue du bureau, clé dans le
+# trousseau GNOME, métadonnées sans secret dans <projet>/.odoo-agents/instances.json (commitées)
+scripts/odoo_instance.py add ~/mon_projet          # dialogue ; --no-gui pour le terminal
+scripts/odoo_instance.py list ~/mon_projet         # environnements, identifiants présents ou non
+scripts/odoo_instance.py check ~/mon_projet staging
+scripts/odoo_instance.py secret ~/mon_projet staging          # (re)saisir sa clé
+scripts/odoo_instance.py migrate ~/mon_projet      # ancien ~/.odoo-agents/instances → projet + trousseau
 
 # Captures, PDF réels
 scripts/odoo-shot.sh "/odoo/action-mod.action_x/3" --wait ".o_form_view" --full

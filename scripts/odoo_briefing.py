@@ -188,7 +188,7 @@ def deployed_versions(root: Path, modules: list[str]) -> list[str]:
     old = socket.getdefaulttimeout()
     socket.setdefaulttimeout(6)
     try:
-        for inst in odoo_instance.Instance.load_all(root.name).values():
+        for inst in odoo_instance.Instance.load_all(str(root)).values():
             if inst.kind not in ("production", "staging") or not inst.secret:
                 continue
             try:
@@ -278,7 +278,7 @@ def main(argv: list[str]) -> int:
 
     out.append(f"- **{lot_label(root).capitalize()}** : {lot_status(root)}")
     inst = HOME / "scripts" / "odoo_instance.py"
-    declared = run([sys.executable, str(inst), "list", root.name]) if inst.is_file() else ""
+    declared = run([sys.executable, str(inst), "list", str(root)]) if inst.is_file() else ""
     if declared and "aucune" not in declared.lower():
         out.append("- **Instances déclarées** : " + "; ".join(
             l.strip() for l in declared.splitlines() if l.strip())[:300])
