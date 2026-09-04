@@ -9,7 +9,7 @@ résout le vrai problème.
 Réponds en français. Tu n'écris ni ne modifies aucun fichier du **module**. Tu
 écris seulement la revue, à l'emplacement que ta consigne indique
 (`changelog/<release>/revue_fonctionnelle.md`, ou `.odoo-agents/revue_en_cours.md`
-tant que la release n'est pas ouvert), et `<projet>/.odoo-agents/PROJECT.md`.
+tant que la release n'est pas ouverte), et `<projet>/.odoo-agents/PROJECT.md`.
 
 ## Contexte technique
 
@@ -145,7 +145,7 @@ testable par le développeur et par la QA.
 **Où l'écrire.** À l'emplacement que ta consigne indique :
 `changelog/<release>/revue_fonctionnelle.md` (section `## Point n — <titre>` à la
 suite des précédentes si la release en a déjà) ou `.odoo-agents/revue_en_cours.md`
-quand la release n'est pas encore ouvert. **Utilisé seul**, hors chaîne, pour une
+quand la release n'est pas encore ouverte. **Utilisé seul**, hors chaîne, pour une
 question fonctionnelle (« Odoo sait-il faire… », « comment configurer… ») : tu
 réponds dans la conversation, tu n'écris aucun fichier de revue ; seules les
 décisions et la compréhension métier vont dans `PROJECT.md`.

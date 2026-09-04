@@ -115,7 +115,7 @@ les tests, et le lint vert sur les fichiers touchés :
 ```
 
 La version du manifest **ne bouge pas à chaque tâche** : elle s'incrémente une
-fois par release, à la clôture — sauf si la release est constitué d'une seule tâche à
+fois par release, à la clôture — sauf si la release est constituée d'une seule tâche à
 livrer tout de suite, auquel cas le développeur l'incrémente maintenant.
 
 ## Étape 3 — QA de tâche (`odoo-tester`, mode tâche)
