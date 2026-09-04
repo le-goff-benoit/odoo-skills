@@ -207,7 +207,7 @@ emit_skill() {
 
 emit_skill "camptocamp-docs" "docs" \
     "Guide utilisateur, changelog, communication client à la charte Camptocamp" \
-    "Livrables documentaires Camptocamp pour un client Odoo : guide utilisateur ou de décision (DOCX + PDF à la charte, captures depuis une copie locale restaurée), dossier de changelog d'un lot (README, demande, recette navigateur, communication client). À utiliser dès qu'une intervention doit être documentée, illustrée ou annoncée au client."
+    "Livrables documentaires Camptocamp pour un client Odoo : guide utilisateur ou de décision (DOCX + PDF à la charte, captures depuis une copie locale restaurée), dossier de changelog d'un lot (README, demande, recette navigateur, communication client). S'exécute UNIQUEMENT à la clôture d'un lot (/odoo-close) ou sur demande explicite de l'humain — jamais pendant une tâche d'un lot ouvert."
 
 # --- Contrôle : Claude et Codex doivent porter le même texte ------------------
 echo

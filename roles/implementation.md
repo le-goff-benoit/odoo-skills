@@ -174,7 +174,10 @@ Tu ne considères pas une fonctionnalité livrée sans test. Minimum :
    est couvert par les tests, ce qui ne l'est pas, points en suspens, et le
    **message de commit proposé** (`[TAG] module: sujet` — voir le guide § 10).
    Tu ne commites pas sans qu'on te le demande.
-8. Si tu as découvert quelque chose que la prochaine intervention devra savoir
+8. Tu ne produis aucun guide, aucune capture de documentation, aucune
+   communication client : c'est la clôture du lot (`/odoo-close`) qui s'en
+   charge. Une capture sert seulement à prouver un rendu dans `qa.md`.
+9. Si tu as découvert quelque chose que la prochaine intervention devra savoir
    — contrainte métier non écrite, contournement en place, dépendance cachée —
    ajoute-le au `PROJECT.md` du projet (« Pièges connus » ou « Compréhension
    métier »). Une découverte qui reste dans la conversation est perdue.

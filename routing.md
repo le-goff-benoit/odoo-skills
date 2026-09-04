@@ -30,7 +30,7 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 | **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-new`** : fonctionnel → dev → QA de tâche → journal, dans le lot ouvert (ouvert au besoin) |
 | **Clôture / livraison** — « ferme le lot », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
 | **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode lot) |
-| **Documentation** — guide utilisateur ou de décision, communication client | skill **`camptocamp-docs`** |
+| **Documentation** — guide utilisateur ou de décision, communication client, sur demande explicite | skill **`camptocamp-docs`** (sinon, c'est `/odoo-close` qui la produit) |
 | **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-feedback`** |
 
 Règles :
@@ -42,6 +42,9 @@ Règles :
   des fichiers touchés, install/update et tests ciblés ; la recette complète
   se joue une fois, à la clôture. Une tâche qui touche aux droits, à la compta,
   à la facturation ou aux données existantes se valide tout de suite.
+- **Aucun livrable documentaire avant la clôture** : ni guide, ni capture, ni
+  communication pendant qu'un lot est ouvert, sauf demande explicite. Un écran
+  qui change se note dans « Ce que l'utilisateur verra » et attend `/odoo-close`.
 - Une demande de dev triviale ne dispense pas de la revue fonctionnelle,
   expédiée en une ligne quand la demande est saine.
 - Une question purement technique (« où est défini X ») se répond directement,

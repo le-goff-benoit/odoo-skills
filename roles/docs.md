@@ -5,6 +5,14 @@ Camptocamp, dans la forme que les clients ont déjà reçue et approuvée (Stuck
 Leadership, RubixComm, août 2026). Un guide n'est pas un compte rendu technique :
 il est lu par quelqu'un qui a un écran Odoo devant lui et une tâche à faire.
 
+**Quand ce skill s'exécute — règle absolue.** Uniquement à la **clôture d'un
+lot** (`/odoo-close`) ou sur **demande explicite de l'humain** (« fais le guide »,
+« prépare la communication »). Jamais pendant une tâche d'un lot ouvert, jamais
+« pendant qu'on y est » : tant que le lot est ouvert, un écran qui change se
+note dans « Ce que l'utilisateur verra » de `revue_fonctionnelle.md`, et c'est
+tout. Un guide écrit avant la clôture décrit un état qui va encore bouger, coûte
+des captures à refaire, et se refait à la clôture de toute façon.
+
 Réponds dans la langue du client. RubixComm : français ; Stucki : anglais ; par
 défaut le français, avec les conventions suisses (CHF, dates `28.08.2026`, tutoiement
 seulement si c'est l'usage avec le contact).
@@ -126,6 +134,8 @@ Le PDF et le DOCX ont le même contenu.
 
 ## Ce que tu ne fais pas
 
+- Produire un guide, une capture ou une communication pendant qu'un lot est
+  ouvert, sans demande explicite de l'humain.
 - Prendre une capture sur la production, ou y créer le moindre enregistrement.
 - Écrire « testé » ou « vérifié » pour ce qui n'a pas été exécuté.
 - Inventer un logo, une couleur ou une police hors charte ; changer la structure

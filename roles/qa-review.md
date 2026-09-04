@@ -15,7 +15,7 @@ dans le module.
 
 | Mode | Quand | Ce qui est joué |
 |---|---|---|
-| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-new`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation |
+| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-new`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation — **aucune capture, aucun livrable documentaire** |
 | **QA de lot** | à la clôture (`/odoo-close`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
 
 La consigne dit le mode. Sans indication : lot ouvert → QA de tâche ; pas de

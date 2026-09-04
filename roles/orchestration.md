@@ -121,9 +121,11 @@ point dans le suivi du lot :
 ~/.odoo19-agents/scripts/odoo-lot.sh done "$LOT" <n°> "<verdict — test ciblé>"
 ```
 
-Pas de captures, pas de guide, pas de communication à ce stade : c'est la
-clôture qui les produit, une fois pour tout le lot. Si un écran change, note-le
+**Interdit à ce stade : captures, guide, communication client, skill
+`camptocamp-docs`.** C'est la clôture (`/odoo-close`) qui les produit, une fois
+pour tout le lot, sur l'état qui part réellement. Si un écran change, note-le
 dans « Ce que l'utilisateur verra » de la revue, c'est ce que la clôture lira.
+Seule exception : l'humain le demande explicitement.
 
 ## Étape 4 — Capitaliser (deux minutes, ne se saute pas)
 
