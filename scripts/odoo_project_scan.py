@@ -332,6 +332,23 @@ def main(argv: list[str]) -> int:
                                           encoding="utf-8")
         print(f"  ✓ {inbox}/  (dépôt de sauvegardes et de mails, ignoré par git)")
 
+    # Consignes du projet pour les agents : un AGENTS.md canonique + un CLAUDE.md
+    # qui y renvoie, seulement s'il n'en existe aucun (on ne touche pas aux consignes
+    # existantes d'un projet).
+    agents_md, claude_md = root / "AGENTS.md", root / "CLAUDE.md"
+    if not agents_md.exists() and not claude_md.exists():
+        template = Path(__file__).resolve().parent.parent / "docs" / "templates" / "project_AGENTS.md"
+        if template.is_file():
+            series_now = odoo_series.resolve(root, explicit)["series"]
+            agents_md.write_text(template.read_text(encoding="utf-8")
+                                 .replace("<PROJET>", root.name).replace("<SERIE>", series_now),
+                                 encoding="utf-8")
+            claude_md.write_text("# Consignes Claude\n\nLis et applique [`AGENTS.md`](AGENTS.md) "
+                                 "avant toute analyse, modification, recette ou livraison dans ce dépôt. "
+                                 "C'est la source canonique, commune à Claude et aux autres assistants ; "
+                                 "ne duplique pas ses règles ici.\n", encoding="utf-8")
+            print(f"  ✓ {agents_md} + {claude_md}  (consignes du projet, à compléter)")
+
     journal = home / "JOURNAL.md"
     if not journal.exists():
         journal.write_text(

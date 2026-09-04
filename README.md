@@ -158,6 +158,17 @@ Fichiers **générés**, à ne pas éditer :
 ~/.claude/CLAUDE.md   ~/.codex/AGENTS.md   (bloc délimité uniquement)
 ```
 
+## Les consignes d'un projet : `AGENTS.md` et `CLAUDE.md`
+
+Le scan crée, s'ils n'existent pas, un `AGENTS.md` canonique (gabarit
+`docs/templates/project_AGENTS.md` : série, première commande, tableau des
+commandes, release, inbox, mémoire, données réelles, conventions propres au
+projet à compléter) et un `CLAUDE.md` qui y renvoie. Un projet qui a déjà ses
+consignes n'est pas touché : on y ajoute à la main la section « Outillage ».
+
+Pour travailler sur le dispositif lui-même, voir [`AGENTS.md`](AGENTS.md) à la
+racine de ce dépôt.
+
 ## Le dossier `inbox/` d'un projet
 
 Créé par le scan ou à l'ouverture d'une release, ignoré par git : l'humain y
