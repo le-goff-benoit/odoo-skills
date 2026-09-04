@@ -49,11 +49,11 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 
 | Profil / commande | Rôle | Quand |
 |---|---|---|
-| `odoo-functional-reviewer` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
-| `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
-| `odoo-qa-reviewer` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
-| `/odoo-feature` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
-| `/odoo-lot-close` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
+| `odoo-cadrage` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
+| `odoo-dev` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
+| `odoo-qa` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
+| `/odoo-demande` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
+| `/odoo-cloture` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
 | `/odoo-retex` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
 | `camptocamp-docs` (skill) | Guide utilisateur / de décision DOCX + PDF à la charte, communication client, captures depuis la copie locale | à la clôture, ou sur demande |
 
@@ -64,7 +64,7 @@ Une demande de développement s'inscrit dans un **lot** de changelog
 livraison. Le cycle :
 
 ```
-odoo-lot.sh open  ──▶  /odoo-feature ×n  ──▶  /odoo-lot-close  ──▶  commit, déploiement
+odoo-lot.sh open  ──▶  /odoo-demande ×n  ──▶  /odoo-cloture  ──▶  commit, déploiement
    demande.md          revue_fonctionnelle.md      recette.md, tests_navigateur.md
    README (suivi)      code + tests, qa.md         captures/, guide, communication
    .base (git)         journal (≤ 15 lignes)       README final, journal de lot
@@ -90,16 +90,16 @@ côté Codex, le même rôle est appliqué en séquence par l'agent principal.
 ### Utilisation
 
 ```
-> /odoo-feature ajoute un champ « référence chantier » sur la commande client
-> /odoo-feature corrige le calcul de la remise sur les lignes de kit      # même lot
-> /odoo-lot-close
-> utilise odoo-functional-reviewer pour challenger cette demande : …
-> lance odoo-qa-reviewer sur alamaison_customisation                     # mode lot
+> /odoo-demande ajoute un champ « référence chantier » sur la commande client
+> /odoo-demande corrige le calcul de la remise sur les lignes de kit      # même lot
+> /odoo-cloture
+> utilise odoo-cadrage pour challenger cette demande : …
+> lance odoo-qa sur alamaison_customisation                     # mode lot
 > /odoo-retex
 ```
 
-Codex : mêmes noms, en skills (`/odoo-feature …`, `/odoo-lot-close`, `/odoo-retex`,
-`/odoo-functional-reviewer …`, `/odoo-developer …`, `/odoo-qa-reviewer …`).
+Codex : mêmes noms, en skills (`/odoo-demande …`, `/odoo-cloture`, `/odoo-retex`,
+`/odoo-cadrage …`, `/odoo-dev …`, `/odoo-qa …`).
 
 ## Arborescence
 
@@ -114,8 +114,8 @@ Codex : mêmes noms, en skills (`/odoo-feature …`, `/odoo-lot-close`, `/odoo-r
 │   ├── functional-review.md
 │   ├── implementation.md
 │   ├── qa-review.md
-│   ├── orchestration.md    ← /odoo-feature
-│   ├── lot-close.md        ← /odoo-lot-close
+│   ├── orchestration.md    ← /odoo-demande
+│   ├── lot-close.md        ← /odoo-cloture
 │   ├── retex.md            ← /odoo-retex
 │   └── docs.md             ← skill camptocamp-docs
 ├── docs/                   ← livrables documentaires (charte, gabarits du changelog)

@@ -15,8 +15,8 @@ dans le module.
 
 | Mode | Quand | Ce qui est joué |
 |---|---|---|
-| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-feature`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation |
-| **QA de lot** | à la clôture (`/odoo-lot-close`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
+| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-demande`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation |
+| **QA de lot** | à la clôture (`/odoo-cloture`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
 
 La consigne dit le mode. Sans indication : lot ouvert → QA de tâche ; pas de
 lot → QA de lot. Une tâche qui touche aux droits, à la compta, à la

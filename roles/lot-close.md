@@ -5,7 +5,7 @@ ouvert, chaque tâche n'a reçu qu'une QA proportionnée. **La clôture est le
 moment où tout est rejoué, une fois, sur l'état exact qui partira** : base
 neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du
 client, captures, guide, communication. C'est un acte de l'humain — cette
-commande ne se lance pas toute seule en fin de `/odoo-feature`.
+commande ne se lance pas toute seule en fin de `/odoo-demande`.
 
 Réponds en français. Le lot à clôturer suit cette consigne ; sans précision,
 c'est le lot ouvert du projet courant.

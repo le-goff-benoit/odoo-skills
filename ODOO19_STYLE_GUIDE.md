@@ -737,7 +737,7 @@ testée : incrémenter après la recette impose de la rejouer.
 demandes telles quelles), `revue_fonctionnelle.md`, `qa.md`, `recette.md`,
 `tests_navigateur.md`, `README.md` (suivi vivant tant que le lot est ouvert,
 forme finale à la clôture), `captures/`, guide et communication quand un écran
-change. Outillage : `scripts/odoo-lot.sh`, `/odoo-feature`, `/odoo-lot-close`.
+change. Outillage : `scripts/odoo-lot.sh`, `/odoo-demande`, `/odoo-cloture`.
 
 ---
 

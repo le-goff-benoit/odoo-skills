@@ -3,7 +3,7 @@
 
 Lot ouvert le <jj mois aaaa>. **Suivi vivant** tant que le lot est ouvert : une
 ligne par point, son test ciblé, son état. La recette complète, les captures et
-les livrables client se font à la clôture (`/odoo-lot-close`), qui réécrit ce
+les livrables client se font à la clôture (`/odoo-cloture`), qui réécrit ce
 fichier dans sa forme finale.
 
 ## Points

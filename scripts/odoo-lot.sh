@@ -17,7 +17,7 @@
 #
 # Pendant que le lot est ouvert, le suivi est léger (un point = une ligne du
 # README, un test ciblé). La recette complète, les captures et les livrables
-# client se font à la clôture : /odoo-lot-close.
+# client se font à la clôture : /odoo-cloture.
 
 set -euo pipefail
 shopt -s nullglob
@@ -47,7 +47,7 @@ case "$cmd" in
         ROOT="$(cd "$ROOT" && pwd)"
         if current="$("$0" current "$ROOT")" && [ -n "$current" ]; then
             echo "Un lot est déjà ouvert : $current" >&2
-            echo "Le clôturer (/odoo-lot-close) avant d'en ouvrir un autre, ou y ajouter le point." >&2
+            echo "Le clôturer (/odoo-cloture) avant d'en ouvrir un autre, ou y ajouter le point." >&2
             exit 1
         fi
         DAY="$(date +%F)"
@@ -82,9 +82,11 @@ case "$cmd" in
         ;;
     points)
         LOT="${1:-}"; [ -f "$LOT/README.md" ] || exit 0
-        awk '/^\| *[0-9]+ *\|/ { print }' "$LOT/README.md" \
-            | sed -E 's/^\| *([0-9]+) *\| *([^|]*)\| *([^|]*)\| *([^|]*)\|.*/\1. \2— \3 [\4]/' \
-            | sed -E 's/ +/ /g'
+        # Tolère les tableaux de suivi maison (colonnes supplémentaires) : n°, libellé, dernière colonne = état.
+        awk -F'|' '/^\| *[0-9]+ *\|/ {
+            n=$2; gsub(/^ +| +$/, "", n); lib=$3; gsub(/^ +| +$/, "", lib);
+            etat=$(NF-1); gsub(/^ +| +$/, "", etat);
+            printf "%s. %s [%s]\n", n, lib, etat }' "$LOT/README.md"
         ;;
     add)
         LOT="${1:-}"; POINT="${2:-}"; TEST="${3:-—}"
@@ -99,7 +101,7 @@ text = open(path, encoding="utf-8").read()
 row = f"| {n} | {point} | {test} | à faire |\n"
 m = list(re.finditer(r"(?m)^\|.*\|\n", text))
 # dernière ligne du premier tableau (celui des points)
-header = re.search(r"(?m)^\| *# *\|", text)
+header = re.search(r"(?m)^\| *(#|N°|n°|No) *\|", text)
 if not header:
     sys.exit("tableau des points introuvable dans " + path)
 pos = header.end()
