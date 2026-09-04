@@ -9,9 +9,14 @@
 #   --uninstall      teste la désinstallation à la fin
 #   --tags <spec>    passe --test-tags (défaut : /<module>)
 #   --tours          n'exécute que les tours (--test-tags /<module>:HttpCase)
-#   --keep           ne coupe pas le stack à la fin
+#   --keep           ne coupe pas PostgreSQL à la fin (il n'est de toute façon
+#                    jamais coupé s'il tournait déjà avant l'appel)
 #
-# Sortie : rapport par étape + extraction des ERROR/WARNING des logs.
+# Base de test : $ODOO_TEST_DB si posée, sinon odoo_qa_<série>_<module>.
+#
+# Sortie : rapport par étape + extraction des ERROR/WARNING des logs, et une
+# ligne finale `RECETTE module=… install=… update=… tests=… uninstall=… errors=…`
+# lisible par odoo-recette.sh.
 # Code retour : 0 seulement si installation, tests et logs sont propres.
 
 set -uo pipefail
@@ -19,17 +24,27 @@ set -uo pipefail
 STACK="$(cd "$(dirname "${BASH_SOURCE[0]}")/../stack" && pwd)"
 # shellcheck source=series-env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/series-env.sh"
-DB="$ODOO_TEST_DB"
 CONF="/etc/odoo/odoo.conf"
 
 MODULE="${1:-}"
 if [ -z "$MODULE" ] || [[ "$MODULE" == --* ]]; then
-    sed -n '2,18p' "$0" >&2
+    sed -n '2,20p' "$0" >&2
     exit 2
 fi
 shift
 
+# Base de test : celle de l'utilisateur si ODOO_TEST_DB est posée, sinon une base
+# par module. Deux projets de la même série (Claude sur l'un, Codex sur l'autre)
+# ne doivent pas se dropper mutuellement leur base avec --fresh.
+if [ -n "${ODOO_TEST_DB_EXPLICIT:-}" ]; then
+    DB="$ODOO_TEST_DB"
+else
+    DB="odoo_qa_${ODOO_SERIES_SLUG}_$(printf '%s' "$MODULE" | tr -c 'a-z0-9_\n' '_' | cut -c1-40)"
+    export ODOO_TEST_DB="$DB"
+fi
+
 FRESH=0; UPDATE=0; UNINSTALL=0; KEEP=0
+INSTALL_OK=ko; UPDATE_OK=n.a.; UNINSTALL_OK=n.a.
 TAGS="/$MODULE"
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -64,6 +79,9 @@ run_odoo() {
 echo "Série ${ODOO_SERIES} — image odoo-qa:${ODOO_SERIES} — base ${DB}"
 
 step "0. Démarrage de PostgreSQL"
+# Si la base tournait déjà (stack utilisé par ailleurs), on ne l'arrêtera pas à la fin.
+DB_WAS_UP=0
+compose ps --status running db 2>/dev/null | grep -q db && DB_WAS_UP=1
 compose up -d db
 compose exec -T db bash -c 'for i in $(seq 1 30); do pg_isready -U odoo -q && exit 0; sleep 1; done; exit 1' \
     || { echo "❌ PostgreSQL indisponible"; exit 1; }
@@ -75,8 +93,16 @@ if [ "$FRESH" -eq 1 ]; then
 fi
 
 step "1. Installation de $MODULE sur $DB"
-if run_odoo -c "$CONF" -d "$DB" -i "$MODULE" --stop-after-init --without-demo=all; then
-    echo "✅ installation OK"
+# Odoo IGNORE un module absent du chemin des addons avec un simple WARNING et
+# sort en 0 : « invalid module names, ignored ». Ce faux vert est traité comme
+# un échec, sinon toute la recette valide du vide.
+if run_odoo -c "$CONF" -d "$DB" -i "$MODULE" --stop-after-init --without-demo=all \
+        && ! grep -q "invalid module names, ignored: .*\b$MODULE\b" "$LOG"; then
+    echo "✅ installation OK"; INSTALL_OK=ok
+elif grep -q "invalid module names, ignored: .*\b$MODULE\b" "$LOG"; then
+    echo "❌ $MODULE est INTROUVABLE dans le chemin des addons du conteneur (ODOO_ADDONS_DIR=${ODOO_ADDONS_DIR:-?})"
+    echo "   ou illisible par l'utilisateur odoo (uid 101) — arrêt"
+    STATUS=1
 else
     echo "❌ installation en échec — arrêt"
     STATUS=1
@@ -85,7 +111,7 @@ fi
 if [ "$STATUS" -eq 0 ] && [ "$UPDATE" -eq 1 ]; then
     step "2. Mise à jour (-u $MODULE)"
     if run_odoo -c "$CONF" -d "$DB" -u "$MODULE" --stop-after-init; then
-        echo "✅ mise à jour OK"
+        echo "✅ mise à jour OK"; UPDATE_OK=ok
     else
         echo "❌ la mise à jour casse — c'est ce qui échouera en production"
         STATUS=1
@@ -117,7 +143,7 @@ print('ETAT_APRES_DESINSTALLATION:', module.state)
 PY
     then
         grep -q "ETAT_APRES_DESINSTALLATION: uninstalled" "$LOG" \
-            && echo "✅ désinstallation OK" \
+            && { echo "✅ désinstallation OK"; UNINSTALL_OK=ok; } \
             || { echo "❌ le module n'est pas passé à l'état 'uninstalled'"; STATUS=1; }
     else
         echo "❌ désinstallation en échec"
@@ -161,7 +187,10 @@ if [ "$WARNS" -gt 0 ]; then
     grep -E "^[0-9-]+ [0-9:,]+ [0-9]+ WARNING" "$LOG" | grep "$MODULE" | head -20
 fi
 
-[ "$KEEP" -eq 1 ] || compose stop db >/dev/null 2>&1
+if [ "$KEEP" -eq 0 ] && [ "$DB_WAS_UP" -eq 0 ]; then compose stop db >/dev/null 2>&1; fi
+
+RESULT_LINE="$(grep -h "odoo.tests.result:" "$LOG" 2>/dev/null | tail -1 | sed 's/.*odoo.tests.result: //; s/ when loading.*//')"
+echo "RECETTE module=$MODULE db=$DB install=$INSTALL_OK update=$UPDATE_OK uninstall=$UNINSTALL_OK tests=\"${RESULT_LINE:-non exécutés}\" errors=$ERRORS failed=$FAILED skipped=$SKIPPED warnings=$WARNS"
 
 echo
 echo "Log complet   : $STACK/$LOG"

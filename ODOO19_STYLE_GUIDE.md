@@ -696,7 +696,52 @@ manipule `hr.contract` doit être repensé sur `hr.version`.
 
 ---
 
-## 10. Anti-patterns rejetés en revue
+## 10. Commits, versions et lots
+
+Un commit Odoo se lit sans ouvrir le diff. Convention d'Odoo S.A.
+(`git log --oneline -300` sur `~/odoo-sources/19.0` : 299 messages sur 300) :
+
+```
+[TAG] module: sujet à l'impératif, sans point final
+
+Corps : le pourquoi, ce que l'utilisateur observait, ce qui change. Référence
+au ticket ou au lot (`changelog/2026-09-04_01_…`).
+```
+
+| Tag | Quand |
+|---|---|
+| `[FIX]` | correctif de bug |
+| `[IMP]` | amélioration d'une fonction existante |
+| `[ADD]` | nouvelle fonction, nouveau module |
+| `[REM]` | suppression |
+| `[REF]` | refactorisation sans changement fonctionnel |
+| `[MOV]` | déplacement de code ou de fichiers |
+| `[REL]` | livraison, incrément de version |
+| `[I18N]` | traductions |
+| `[PERF]` | performance |
+| `[CLA]` | accord de contribution |
+
+Plusieurs modules : `[FIX] sale, stock: …`. Un commit par lot est la norme de
+livraison ; le corps liste les points livrés, dans les mots du README du lot.
+
+**Version du manifest** : `<série>.<majeure>.<mineure>.<correctif>`, incrémentée
+**une fois par lot, à la clôture**, sur la composante convenue avec le projet,
+lue dans le fichier — jamais mémorisée. Tout champ stocké ajouté rend
+l'incrément obligatoire : Odoo.sh déploie le code sans mettre le module à jour
+si `version` n'a pas bougé, la colonne n'est jamais créée, et l'écran casse en
+production sur `column … does not exist`. Une modification purement
+documentaire ne change pas la version. La version livrée est celle qui a été
+testée : incrémenter après la recette impose de la rejouer.
+
+**Lot de changelog** (`changelog/AAAA-MM-JJ_NN_titre/`) : `demande.md` (les
+demandes telles quelles), `revue_fonctionnelle.md`, `qa.md`, `recette.md`,
+`tests_navigateur.md`, `README.md` (suivi vivant tant que le lot est ouvert,
+forme finale à la clôture), `captures/`, guide et communication quand un écran
+change. Outillage : `scripts/odoo-lot.sh`, `/odoo-feature`, `/odoo-lot-close`.
+
+---
+
+## 11. Anti-patterns rejetés en revue
 
 1. `<tree>`, `attrs=`, `states=` dans une vue.
 2. `_sql_constraints` au lieu de `models.Constraint`.
@@ -714,3 +759,5 @@ manipule `hr.contract` doit être repensé sur `hr.version`.
 13. Menus/actions chargés avant les vues qu'ils référencent dans le manifest.
 14. Dépendance à un module supprimé en 19 (`hr_contract`, `web_editor`, …).
 15. XPath positionnel ou fragile dans un héritage de vue.
+16. Champ stocké ajouté sans incrément de version du manifest.
+17. Message de commit sans `[TAG] module:`, ou version incrémentée après la recette.

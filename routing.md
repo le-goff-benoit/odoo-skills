@@ -1,114 +1,72 @@
-Sources Odoo en lecture seule sur ce poste :
-`~/odoo-sources/{14.0,17.0,18.0,19.0,19.1,19.4}` (+ `-enterprise`).
-Ne jamais y écrire : tout code va dans le module custom du projet.
+Sources Odoo en lecture seule : `~/odoo-sources/{14.0,17.0,18.0,19.0,19.1,19.4}`
+(+ `-enterprise`). Ne jamais y écrire : tout code va dans le module custom du projet.
 
-Référentiel (`~/.odoo19-agents/`) :
-- `ODOO19_STYLE_GUIDE.md` — ligne éditoriale, décrit la **19.0** ;
-- `SERIES_MATRIX.md` — ce qui change d'une série à l'autre ; **fait foi** quand
-  il contredit le guide ;
-- `PLATEFORMES.md` — ce qui change d'un hébergement à l'autre (Odoo.sh, Odoo
-  Online/SaaS, on-premise et Docker local) ; **fait foi** sur le déploiement, la
-  restauration et l'exploitation ;
-- `LESSONS.md` — les erreurs déjà payées, à ne pas refaire.
+Référentiel `~/.odoo19-agents/` : `ODOO19_STYLE_GUIDE.md` (ligne éditoriale,
+décrit la **19.0**), `SERIES_MATRIX.md` (ce qui change par série, **fait foi**
+sur le guide), `PLATEFORMES.md` (Odoo.sh / Online / on-premise / Docker, fait
+foi sur déploiement et restauration), `LESSONS.md` (les erreurs déjà payées).
 
-## La série d'abord
+## La série d'abord, le briefing ensuite
 
-Le parc est mélangé : 17.0, 18.0, 19.0, saas~19.1, saas~19.4. Écrire du 19.0
-dans un module 18.0 le casse à l'installation ; le relire avec les règles de la
-19.0 remonte des anomalies fausses. **Avant toute lecture ou écriture de code
-Odoo, établir la série cible** :
+Le parc est mélangé (17.0, 18.0, 19.0, saas~19.1, saas~19.4). Écrire du 19.0
+dans un module 18.0 le casse ; le relire avec les règles 19.0 remonte des
+anomalies fausses. **Avant toute lecture ou écriture de code Odoo**, une commande :
 
 ```bash
-python3 ~/.odoo19-agents/scripts/odoo_series.py <chemin_du_module>
+python3 ~/.odoo19-agents/scripts/odoo_briefing.py <module_ou_projet>
 ```
 
-Elle vient de `.odoo-agents/config` du projet, sinon du préfixe de `version` du
-manifest. Tous les scripts l'annoncent en tête de sortie.
+Elle donne la série (de `.odoo-agents/config`, sinon du manifest) et tout ce
+que le projet sait déjà : `PROJECT.md` (relevé + compréhension métier,
+décisions actées, pièges connus), dernières entrées de `JOURNAL.md`, lot de
+changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
+`~/.odoo19-agents/scripts/odoo_project_scan.py <racine>`.
 
-## Le projet ensuite
+## Aiguillage
 
-Chaque projet outillé porte un dossier `.odoo-agents/` :
-
-| Fichier | Contenu | Qui l'écrit |
-|---|---|---|
-| `config` | la série qui fait autorité | le scan, puis l'humain |
-| `PROJECT.md` | relevé (modules, modèles, dépendances, dette, zones chaudes) + compréhension métier, décisions actées, pièges connus | le scan pour le relevé, les agents pour le reste |
-| `JOURNAL.md` | une entrée par intervention, avec ce qui a été **appris** | le profil QA en fin de chaîne |
-
-À lire **avant** d'analyser ou de coder. À créer s'il manque :
-
-```bash
-~/.odoo19-agents/scripts/odoo_project_scan.py <racine_du_projet>
-```
-
-## Aiguillage — quel agent pour quelle demande
-
-Trois profils existent : `odoo-functional-reviewer`, `odoo-developer`, `odoo-qa-reviewer`,
-plus le skill `camptocamp-docs` pour les livrables documentaires.
-Le choix ne se discute pas, il découle de la nature de la demande :
-
-| Nature de la demande | Réponse attendue |
+| Nature de la demande | Réponse |
 |---|---|
-| **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « est-ce qu'Odoo sait faire… », « comment configurer… », arbitrer une règle métier | **`odoo-functional-reviewer` seul.** Aucun code écrit. |
-| **Développement** — créer, modifier, corriger, étendre du code (module, modèle, champ, vue, rapport, wizard, correctif de bug) | **La chaîne complète, automatiquement** : `odoo-functional-reviewer` → `odoo-developer` → `odoo-qa-reviewer`. C'est ce que fait `/odoo-feature`. |
-| **Validation seule** — « relis », « valide », « teste », « ce module est-il propre ? » | **`odoo-qa-reviewer` seul.** |
-| **Amélioration du dispositif** — « qu'est-ce qu'on a appris », « le guide est-il à jour », « fais un retex » | **`/odoo-retex`.** Relit les journaux, vérifie le référentiel contre les sources, promeut les leçons. |
-| **Documentation & livraison** — guide utilisateur, guide de décision, changelog d'un lot, recette, communication client, captures d'écran | **Skill `camptocamp-docs`.** Copie locale du client restaurée, captures réelles, DOCX + PDF à la charte Camptocamp. |
+| **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « Odoo sait-il faire… », arbitrer une règle métier | `odoo-functional-reviewer` **seul**, aucun code |
+| **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-feature`** : fonctionnel → dev → QA de tâche → journal, dans le lot ouvert (ouvert au besoin) |
+| **Clôture / livraison** — « ferme le lot », « prépare la livraison », « recette complète » | **`/odoo-lot-close`** : recette entière, captures, guide, README, commit proposé |
+| **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-qa-reviewer` **seul** (mode lot) |
+| **Documentation** — guide utilisateur ou de décision, communication client | skill **`camptocamp-docs`** |
+| **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-retex`** |
 
-Règles d'application :
+Règles :
 
-- La chaîne de développement se déroule **sans redemander l'autorisation entre les
-  étapes**. Elle ne s'interrompt que dans les cas prévus par `/odoo-feature`
-  (question bloquante, besoin déjà couvert par le standard, QA rouge après reprise).
-- Une demande de dev triviale ne dispense pas de la revue fonctionnelle : celle-ci
-  est simplement expédiée en une ligne quand la demande est saine.
-- Une question purement technique sur Odoo (« où est défini X », « comment marche Y »)
-  se répond directement, sans agent — mais **dans la série du projet concerné**.
-- Toute intervention de la chaîne se termine par une entrée dans le `JOURNAL.md`
-  du projet. Ce qui n'est pas écrit sera redécouvert au prix fort.
+- La chaîne se déroule **sans redemander l'autorisation entre les étapes** ;
+  elle ne s'arrête que si le standard couvre le besoin, sur question bloquante,
+  ou QA rouge après deux reprises.
+- **Tâche légère, lot lourd** : pendant un lot ouvert, chaque tâche reçoit lint
+  des fichiers touchés, install/update et tests ciblés ; la recette complète
+  se joue une fois, à la clôture. Une tâche qui touche aux droits, à la compta,
+  à la facturation ou aux données existantes se valide tout de suite.
+- Une demande de dev triviale ne dispense pas de la revue fonctionnelle,
+  expédiée en une ligne quand la demande est saine.
+- Une question purement technique (« où est défini X ») se répond directement,
+  sans agent — dans la série du projet.
+- Toute intervention se termine par une entrée (≤ 15 lignes) dans le
+  `JOURNAL.md` du projet ; le détail vit dans le dossier du lot.
+- Claude Code délègue aux sous-agents ; Codex applique les rôles
+  (`~/.odoo19-agents/roles/*.md`) lui-même, en séquence. Résultat identique.
 - Hors Odoo, cet aiguillage ne s'applique pas.
 
-## Données réelles : sauvegarde d'abord, base distante ensuite
+## Données réelles
 
-Quand une tâche a besoin des données du client (reproduire un défaut, capturer des
-écrans, reprendre des données, chiffrer une migration), la voie normale est une
-**copie locale** : sauvegarde fournie par le client ou téléchargée, puis
+La voie normale est une **copie locale** de la sauvegarde client :
+`~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test`
+(neutralisée, `admin/admin`, tout y est permis). Sans sauvegarde, l'accès à une
+base distante se **déclare** (`odoo_instance.py add <projet>` : secret dans le
+trousseau du bureau, le reste dans `~/.odoo-agents/instances/`, rien dans un
+dépôt) plutôt que de coller des identifiants dans la conversation ; clé API et
+compte en lecture seule recommandés.
 
-```bash
-~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test
-```
-
-La base est neutralisée (mails, crons, paiements coupés, bandeau), `admin/admin`, et
-tout y est permis.
-
-Si aucune sauvegarde n'est disponible, ou qu'il faut lire une base distante, **guide
-l'utilisateur** pour déclarer l'accès plutôt que de coller des identifiants dans la
-conversation :
-
-```bash
-~/.odoo19-agents/scripts/odoo_instance.py add <projet>     # questions une à une, saisie masquée
-~/.odoo19-agents/scripts/odoo_instance.py check <projet> <nom>
-```
-
-Les identifiants sont stockés dans `~/.odoo-agents/instances/<projet>.json` (mode 600,
-hors de tout dépôt). Recommande une **clé API** (Préférences → Sécurité du compte)
-plutôt qu'un mot de passe, et un compte en lecture seule pour la production.
-
-**Production** — règles absolues, rappelées à l'utilisateur avant la première connexion :
-
-- annonce l'avertissement en clair : *« Vous me donnez accès à la PRODUCTION de <client>.
-  Je n'y ferai que de la lecture. Toute écriture vous sera demandée explicitement,
-  opération par opération. »* ;
-- lecture seule par défaut : `odoo_instance.py` refuse `create`, `write`, `unlink` et
-  toute méthode d'action sur une instance `production` ;
-- une écriture en production n'est possible qu'après **confirmation explicite de
-  l'humain pour cette opération précise** (modèle, enregistrements, valeurs), puis
-  `--allow-write` et `ODOO_PRODUCTION_CONFIRMED=<nom>` sur la commande. Jamais en lot,
-  jamais « pendant qu'on y est » ;
-- aucun test, aucune capture d'écran, aucune reprise de données en production : ça se
-  fait sur la copie locale ;
-- ne jamais afficher, journaliser ni commiter un identifiant ; `odoo_instance.py list`
-  ne montre pas les secrets.
-
-Staging et test : écriture permise, mais annonce ce que tu vas modifier et nettoie
-derrière toi.
+**Production — règles absolues** : annonce en clair *« Vous me donnez accès à
+la PRODUCTION de <client>. Je n'y ferai que de la lecture. Toute écriture vous
+sera demandée explicitement, opération par opération. »* ; lecture seule par
+défaut (`odoo_instance.py` refuse `create`/`write`/`unlink` en production) ;
+une écriture exige la confirmation humaine de **cette** opération, puis
+`--allow-write` et `ODOO_PRODUCTION_CONFIRMED=<nom>` ; jamais en lot ; aucun
+test, capture ni reprise en production ; aucun identifiant affiché, journalisé
+ou commité. Staging et test : écriture permise, annoncée, nettoyée derrière.

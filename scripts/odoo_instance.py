@@ -6,6 +6,8 @@ Les identifiants vivent HORS des dépôts, dans `~/.odoo-agents/instances/<proje
 
     odoo_instance.py add <projet>                 déclaration guidée (questions une à une)
     odoo_instance.py list <projet>                instances déclarées, sans secrets
+    odoo_instance.py migrate <projet>             déplace les secrets du JSON vers le trousseau
+    odoo_instance.py remove <projet> <nom>        retire une instance (fichier et trousseau)
     odoo_instance.py check <projet> <nom>         version + authentification (lecture seule)
     odoo_instance.py backup <projet> <nom> [--out fichier.zip]
                                                   télécharge une sauvegarde par /web/database/backup
@@ -13,6 +15,14 @@ Les identifiants vivent HORS des dépôts, dans `~/.odoo-agents/instances/<proje
     odoo_instance.py rpc <projet> <nom> <modèle> <méthode> [json-args] [--kwargs json]
                                                   appel XML-RPC ; écriture refusée en production sauf
                                                   --allow-write ET ODOO_PRODUCTION_CONFIRMED=<nom>
+
+Où vivent les secrets :
+  - dans le TROUSSEAU du bureau (GNOME Keyring / libsecret, via `secretstorage`) quand il est
+    disponible : chiffré au repos, déverrouillé avec la session, jamais en clair sur le disque.
+    Le fichier JSON ne garde alors que `"secret": "@keyring"` ;
+  - sinon (session SSH sans D-Bus, trousseau absent) dans le JSON, mode 600 — repli explicite ;
+  - `ODOO_INSTANCE_SECRET` dans l'environnement l'emporte sur les deux (CI, script ponctuel).
+  `odoo_instance.py migrate <projet>` déplace les secrets du JSON vers le trousseau.
 
 Règles, non négociables :
   - `kind = production` → LECTURE SEULE par défaut. Toute écriture exige que l'humain ait
@@ -47,6 +57,51 @@ from pathlib import Path
 
 STORE = Path(os.environ.get("ODOO_AGENTS_HOME", Path.home() / ".odoo-agents")) / "instances"
 KINDS = ("production", "staging", "test", "local")
+KEYRING_MARK = "@keyring"
+
+
+# --- Trousseau (libsecret / GNOME Keyring) -------------------------------------
+def _keyring_attrs(project: str, name: str) -> dict[str, str]:
+    return {"application": "odoo-agents", "project": project, "instance": name}
+
+
+def _keyring_collection():
+    """Collection par défaut du trousseau, déverrouillée ; None si indisponible."""
+    try:
+        import secretstorage  # noqa: PLC0415
+        bus = secretstorage.dbus_init()
+        coll = secretstorage.get_default_collection(bus)
+        if coll.is_locked():
+            coll.unlock()
+        return None if coll.is_locked() else coll
+    except Exception:  # noqa: BLE001 — pas de D-Bus, pas de trousseau, module absent
+        return None
+
+
+def keyring_get(project: str, name: str) -> str | None:
+    coll = _keyring_collection()
+    if coll is None:
+        return None
+    for item in coll.search_items(_keyring_attrs(project, name)):
+        return item.get_secret().decode("utf-8")
+    return None
+
+
+def keyring_set(project: str, name: str, secret: str) -> bool:
+    coll = _keyring_collection()
+    if coll is None:
+        return False
+    coll.create_item(f"Odoo {project} / {name} (odoo-agents)", _keyring_attrs(project, name),
+                     secret.encode("utf-8"), replace=True)
+    return True
+
+
+def keyring_delete(project: str, name: str) -> None:
+    coll = _keyring_collection()
+    if coll is None:
+        return
+    for item in coll.search_items(_keyring_attrs(project, name)):
+        item.delete()
 READ_METHODS = {"search", "search_read", "read", "search_count", "fields_get", "name_search",
                 "read_group", "web_search_read", "web_read", "get_views", "check_access_rights",
                 "default_get", "name_get", "get_metadata", "read_progress_bar", "web_read_group"}
@@ -86,7 +141,15 @@ class Instance:
         if not p.is_file():
             return {}
         data = json.loads(p.read_text())
-        return {name: cls(project=project, name=name, **vals) for name, vals in data.items()}
+        out = {}
+        for name, vals in data.items():
+            inst = cls(project=project, name=name, **vals)
+            if os.environ.get("ODOO_INSTANCE_SECRET"):
+                inst.secret = os.environ["ODOO_INSTANCE_SECRET"]
+            elif inst.secret == KEYRING_MARK:
+                inst.secret = keyring_get(project, name) or ""
+            out[name] = inst
+        return out
 
     @classmethod
     def load(cls, project: str, name: str, *, quiet: bool = False) -> "Instance":
@@ -100,19 +163,35 @@ class Instance:
             print(BANNER.format(name=f"{project} / {name} — {inst.url}"), file=sys.stderr)
         return inst
 
-    def save(self) -> None:
+    @property
+    def secret_location(self) -> str:
+        """« trousseau » ou « fichier » : où le secret de cette instance est rangé."""
+        p = self.path(self.project)
+        if p.is_file():
+            raw = json.loads(p.read_text()).get(self.name, {})
+            return "trousseau" if raw.get("secret") == KEYRING_MARK else "fichier"
+        return "fichier"
+
+    def save(self, *, prefer_keyring: bool = True) -> str:
+        """Enregistre l'instance ; renvoie où le secret est allé (« trousseau » / « fichier »)."""
         STORE.mkdir(parents=True, exist_ok=True)
         try:
             STORE.chmod(stat.S_IRWXU)
         except OSError:
             pass
-        all_ = self.load_all(self.project)
-        all_[self.name] = self
-        data = {name: {k: v for k, v in asdict(inst).items() if k not in ("project", "name")}
-                for name, inst in all_.items()}
+        raw = json.loads(self.path(self.project).read_text()) if self.path(self.project).is_file() else {}
+        where = "fichier"
+        if prefer_keyring and self.secret and keyring_set(self.project, self.name, self.secret):
+            where = "trousseau"
+        vals = {k: v for k, v in asdict(self).items() if k not in ("project", "name")}
+        if where == "trousseau":
+            vals["secret"] = KEYRING_MARK
+        raw[self.name] = vals
+        data = raw
         p = self.path(self.project)
         p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
         p.chmod(stat.S_IRUSR | stat.S_IWUSR)
+        return where
 
     # -- accès -------------------------------------------------------------------
     @property
@@ -126,6 +205,11 @@ class Instance:
         return self._proxy("common").version()
 
     def uid(self) -> int:
+        if not self.secret:
+            raise SystemExit(
+                f"aucun secret pour {self.project} / {self.name} : le trousseau est verrouillé ou "
+                "inaccessible (session SSH sans D-Bus ?). Déverrouiller la session, poser "
+                "ODOO_INSTANCE_SECRET, ou redéclarer avec odoo_instance.py add.")
         uid = self._proxy("common").authenticate(self.db, self.login, self.secret, {})
         if not uid:
             raise SystemExit(f"authentification refusée sur {self.url} / {self.db} ({self.login})")
@@ -181,7 +265,12 @@ def ask(prompt: str, default: str = "", choices: tuple[str, ...] | None = None,
 
 def cmd_add(args) -> int:
     print(f"Déclaration d'une instance Odoo pour le projet « {args.project} ».")
-    print("Les identifiants sont enregistrés dans", Instance.path(args.project), "(mode 600, hors dépôt).\n")
+    if _keyring_collection() is not None:
+        print("Le secret ira dans le trousseau du bureau (GNOME Keyring) ; le reste dans",
+              Instance.path(args.project), "(mode 600, hors dépôt).\n")
+    else:
+        print("Trousseau indisponible : le secret ira dans", Instance.path(args.project),
+              "(mode 600, hors dépôt).\n")
     kind = ask("Type d'instance", "test", KINDS)
     if kind == "production":
         print(BANNER.format(name=args.project), file=sys.stderr)
@@ -208,8 +297,8 @@ def cmd_add(args) -> int:
         print(f"  ✗ {exc}")
         if ask("Enregistrer quand même ?", "n", ("o", "n")) == "n":
             return 1
-    inst.save()
-    print(f"Enregistré : {args.project} / {name} ({kind}).")
+    where = inst.save()
+    print(f"Enregistré : {args.project} / {name} ({kind}) — secret dans le {where}.")
     return 0
 
 
@@ -220,7 +309,8 @@ def cmd_list(args) -> int:
         return 1
     for inst in all_.values():
         flag = "  ⚠️ PRODUCTION — lecture seule" if inst.is_production else ""
-        print(f"{inst.name:<12} {inst.kind:<10} {inst.url}  db={inst.db}  login={inst.login}  [{inst.platform}]{flag}")
+        print(f"{inst.name:<12} {inst.kind:<10} {inst.url}  db={inst.db}  login={inst.login}  "
+              f"[{inst.platform}] secret:{inst.secret_location}{flag}")
         if inst.notes:
             print(f"{'':<12} {inst.notes}")
     return 0
@@ -258,6 +348,33 @@ def cmd_backup(args) -> int:
     return 0
 
 
+def cmd_migrate(args) -> int:
+    """Déplace les secrets du fichier JSON vers le trousseau."""
+    if _keyring_collection() is None:
+        raise SystemExit("trousseau indisponible (pas de D-Bus / GNOME Keyring dans cette session).")
+    moved = 0
+    for inst in Instance.load_all(args.project).values():
+        if inst.secret_location == "trousseau" or not inst.secret:
+            continue
+        inst.save(prefer_keyring=True)
+        moved += 1
+        print(f"  ✓ {args.project} / {inst.name} → trousseau")
+    print(f"{moved} secret(s) déplacé(s) ; {Instance.path(args.project)} ne contient plus que des marqueurs.")
+    return 0
+
+
+def cmd_remove(args) -> int:
+    p = Instance.path(args.project)
+    raw = json.loads(p.read_text()) if p.is_file() else {}
+    if args.name not in raw:
+        raise SystemExit(f"instance « {args.name} » inconnue pour {args.project}")
+    keyring_delete(args.project, args.name)
+    del raw[args.name]
+    p.write_text(json.dumps(raw, ensure_ascii=False, indent=2) + "\n")
+    print(f"Supprimé : {args.project} / {args.name} (fichier et trousseau).")
+    return 0
+
+
 def cmd_rpc(args) -> int:
     inst = Instance.load(args.project, args.name)
     rpc_args = json.loads(args.args) if args.args else []
@@ -275,6 +392,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("check"); p.add_argument("project"); p.add_argument("name"); p.set_defaults(fn=cmd_check)
     p = sub.add_parser("backup"); p.add_argument("project"); p.add_argument("name"); p.add_argument("--out")
     p.set_defaults(fn=cmd_backup)
+    p = sub.add_parser("migrate"); p.add_argument("project"); p.set_defaults(fn=cmd_migrate)
+    p = sub.add_parser("remove"); p.add_argument("project"); p.add_argument("name"); p.set_defaults(fn=cmd_remove)
     p = sub.add_parser("rpc"); p.add_argument("project"); p.add_argument("name")
     p.add_argument("model"); p.add_argument("method"); p.add_argument("args", nargs="?")
     p.add_argument("--kwargs"); p.add_argument("--allow-write", action="store_true"); p.set_defaults(fn=cmd_rpc)

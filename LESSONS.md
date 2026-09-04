@@ -1,5 +1,7 @@
 # Leçons — mémoire longue des agents Odoo
 
+<!-- dernier-retex: 2026-09-02 -->
+
 > Le `JOURNAL.md` d'un projet retient ce qui s'est passé **sur ce projet**.
 > Ce fichier retient ce qui doit changer **dans la façon de travailler**, tous
 > projets confondus. Il est court par construction : une leçon n'y entre que si
@@ -112,7 +114,10 @@ prise pour un succès.
 lancer, et ne jamais détruire avant d'avoir prouvé que la réparation marche.
 **Effet** : `roles/implementation.md` § Interdits (deux entrées : option non
 vérifiée, ordre destruction/réparation) ; recette de rattrapage dans
-`PLATEFORMES.md` § Reprise de données.
+`PLATEFORMES.md` § Reprise de données. Même famille, 2026-09-04 : `odoo -i
+<module>` sur un module absent du chemin des addons écrit un `WARNING invalid
+module names, ignored` et sort en 0 — `odoo-test.sh` affichait « installation
+OK » sur du vide ; il traite désormais ce warning comme un échec.
 
 ### L5 — Reproduire dans l'outil du système cible, jamais dans le sien
 **Portée** : universelle

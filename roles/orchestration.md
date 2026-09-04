@@ -1,44 +1,86 @@
-# Chaîne de développement Odoo 19
+# Chaîne de développement Odoo — une demande, dans un lot
 
-Enchaîne les trois profils dans l'ordre logique sur une demande de développement,
-**sans redemander l'autorisation entre les étapes**. La demande à traiter suit cette
-consigne (ou est celle que l'utilisateur vient de formuler).
+Enchaîne les profils dans l'ordre logique sur une demande de développement,
+**sans redemander l'autorisation entre les étapes**. La demande à traiter suit
+cette consigne (ou est celle que l'utilisateur vient de formuler).
 
-Référentiel commun : `ODOO19_STYLE_GUIDE.md` (19.0), `SERIES_MATRIX.md` (les autres
-séries), `LESSONS.md` (les erreurs déjà payées), tous dans
-`~/.odoo19-agents/`. Réponds en français.
+Référentiel commun dans `~/.odoo19-agents/` : `ODOO19_STYLE_GUIDE.md` (19.0),
+`SERIES_MATRIX.md` (les autres séries, fait foi), `LESSONS.md`. Réponds en
+français.
 
-## Étape 0 — Situer le projet (30 secondes, non négociable)
+## Le principe : tâche légère, lot lourd
 
-Le parc de modules est mélangé : 17.0, 18.0, 19.0, saas~19.x. Une chaîne lancée
-avec la mauvaise série produit du code qui ne s'installe pas et une QA qui remonte
-des anomalies fausses.
+Une demande de développement s'inscrit dans un **lot** de changelog
+(`changelog/AAAA-MM-JJ_NN_titre/`), qui regroupe les demandes d'une même
+livraison. Pendant que le lot est ouvert, chaque tâche reçoit une **QA de
+tâche** proportionnée (lint des fichiers touchés, tests ciblés, installation
+sur la base de QA). La **recette complète** — base neuve, suite entière, tours,
+désinstallation, mise à niveau sur la copie du client, captures, guide,
+communication — se joue **une fois, à la clôture du lot** (`/odoo-lot-close`).
+Cette chaîne ne clôture jamais un lot : c'est un acte de l'humain.
+
+Exception : une demande qui touche aux droits, à la comptabilité, à la
+facturation ou aux données existantes est validée **immédiatement** au niveau
+nécessaire (recette sur la copie du client comprise), lot ouvert ou pas.
+
+## Comment enchaîner les profils
+
+- **Claude Code** : délègue chaque étape au sous-agent nommé (outil `Agent`,
+  `subagent_type` = `odoo-functional-reviewer`, `odoo-developer`,
+  `odoo-qa-reviewer`). Le sous-agent ne voit pas cette conversation : sa
+  consigne contient le **briefing** de l'étape 0, le chemin du lot, et le chemin
+  des fichiers produits par l'étape précédente. Il rend un rapport court ; le
+  détail vit dans les fichiers du lot.
+- **Codex** (pas de sous-agents) : applique toi-même les rôles, dans l'ordre, en
+  lisant `~/.odoo19-agents/roles/<rôle>.md` au début de chaque étape et en
+  écrivant les mêmes fichiers. Le résultat doit être indiscernable.
+
+Dans les deux cas, **les fichiers du lot sont le canal de transmission** entre
+étapes, pas la conversation : `revue_fonctionnelle.md` → code → `qa.md`.
+
+## Étape 0 — Situer (une commande, non négociable)
 
 ```bash
-python3 ~/.odoo19-agents/scripts/odoo_series.py <module_ou_projet>
-# Pas de fiche projet ? on la crée, elle sert aux trois étapes :
-~/.odoo19-agents/scripts/odoo_project_scan.py <racine_du_projet>
+python3 ~/.odoo19-agents/scripts/odoo_briefing.py <module_ou_projet>
 ```
 
-Lis ensuite `<projet>/.odoo-agents/PROJECT.md` et les dernières entrées de
-`JOURNAL.md`. Annonce en une ligne : **projet, série, origine de la série,
-modules concernés**. Toutes les étapes suivantes travaillent dans cette série.
+Le briefing donne la série et son origine, le lot ouvert et ses points, ce que
+le projet sait déjà (métier, décisions, pièges), les dernières entrées du
+journal, les leçons applicables et les formes attendues dans cette série. S'il
+signale l'absence de `.odoo-agents/`, crée-le d'abord :
+`~/.odoo19-agents/scripts/odoo_project_scan.py <racine_du_projet>`.
 
-Cherche aussi une **copie du client** : sauvegarde dans le projet, base déjà
-restaurée (`odoo-stack.sh dbs`), instance déclarée (`odoo_instance.py list`).
-Elle sert aux trois étapes (existant en base, reproduction, mise à niveau réelle).
-Si elle manque et que la demande touche des données existantes, demande-la à
-l'utilisateur dès maintenant — sans bloquer la revue fonctionnelle.
+Annonce en une ligne : **projet, série, origine de la série, lot, modules
+concernés**. Toutes les étapes suivantes travaillent dans cette série.
+
+Puis le lot :
+
+```bash
+LOT=$(~/.odoo19-agents/scripts/odoo-lot.sh current <racine>)
+# Aucun lot ouvert ? on en ouvre un — titre court, orienté résultat métier.
+LOT=$(~/.odoo19-agents/scripts/odoo-lot.sh open <racine> "<titre>")
+# La demande, telle quelle, datée, dans demande.md ; puis un point dans le suivi.
+~/.odoo19-agents/scripts/odoo-lot.sh add "$LOT" "<point en une ligne>"
+```
+
+Copie la demande d'origine dans `$LOT/demande.md` **sans la reformuler**.
+
+Cherche aussi une **copie du client** (le briefing liste les bases du stack et
+les instances déclarées). Elle sert aux trois étapes. Si elle manque et que la
+demande touche des données existantes, demande-la à l'utilisateur dès
+maintenant — sans bloquer la revue fonctionnelle.
 
 ## Étape 1 — Revue fonctionnelle (`odoo-functional-reviewer`)
 
-Applique le rôle `~/.odoo19-agents/roles/functional-review.md`.
+Rôle : `~/.odoo19-agents/roles/functional-review.md`. Il écrit sa revue dans
+`$LOT/revue_fonctionnelle.md` (une section par point si le lot en a plusieurs)
+et ses décisions durables dans `PROJECT.md`.
 
 Puis **décide, et annonce ta décision** :
 
 | Issue de la revue | Suite |
 |---|---|
-| Verdict **ÇA EXISTE** — le standard de la série couvre le besoin | **STOP.** Livre la revue, explique la configuration à faire, ne développe pas. |
+| Verdict **ÇA EXISTE** — le standard de la série (ou la base du client) couvre le besoin | **STOP.** Livre la revue, explique la configuration à faire, ne développe pas. Le point est marqué « configuration » dans le suivi du lot. |
 | Au moins une **question bloquante** | **STOP.** Livre la revue et les questions. N'invente pas la réponse. |
 | Contradiction **bloquante** non levable | **STOP.** Livre la revue avec le risque. |
 | Spec saine (y compris demande triviale expédiée en une ligne) | **CONTINUE** à l'étape 2. |
@@ -48,100 +90,89 @@ hypothèse retenue dans la spec, et continue.
 
 ## Étape 2 — Implémentation (`odoo-developer`)
 
-Applique le rôle `~/.odoo19-agents/roles/implementation.md`, en prenant
-la spec de l'étape 1 comme périmètre — ni plus, ni moins.
-
-Le lint doit être vert avant de passer à l'étape 3 :
+Rôle : `~/.odoo19-agents/roles/implementation.md`, avec la spec de
+`revue_fonctionnelle.md` comme périmètre — ni plus, ni moins. Il livre le code,
+les tests, et le lint vert sur les fichiers touchés :
 
 ```bash
-~/.odoo19-agents/scripts/odoo-lint.sh <chemin_du_module>
+~/.odoo19-agents/scripts/odoo-lint.sh --changed "$(cat $LOT/.base)" <module>
 ```
 
-## Étape 3 — Revue & QA (`odoo-qa-reviewer`)
+La version du manifest **ne bouge pas à chaque tâche** : elle s'incrémente une
+fois par lot, à la clôture — sauf si le lot est constitué d'une seule tâche à
+livrer tout de suite, auquel cas le développeur l'incrémente maintenant.
 
-Applique le rôle `~/.odoo19-agents/roles/qa-review.md` : lint, puis
-exécution réelle sur le stack Docker de la série, puis parcours e2e.
+## Étape 3 — QA de tâche (`odoo-qa-reviewer`, mode tâche)
+
+Rôle : `~/.odoo19-agents/roles/qa-review.md`, **mode tâche** : relecture du
+diff, lint `--changed`, installation/mise à jour du module sur la base de QA et
+tests ciblés de la tâche.
 
 ```bash
 export ODOO_ADDONS_DIR=<répertoire contenant le module>
-~/.odoo19-agents/scripts/odoo-stack.sh build   # une fois par série
-~/.odoo19-agents/scripts/odoo-stack.sh up
-~/.odoo19-agents/scripts/odoo-test.sh <module> --fresh --update
-
-# Preuves visuelles quand la demande touche l'écran ou un rapport :
-~/.odoo19-agents/scripts/odoo-shot.sh <url> --out avant_apres.png
-~/.odoo19-agents/scripts/odoo-pdf.sh <report_ref> <ids> --out rapport.pdf
+~/.odoo19-agents/scripts/odoo-test.sh <module> --update --tags /<module>:<TestClasse>
 ```
 
-Sur un module existant, linte avec `--changed` : la dette antérieure n'est pas le
-sujet de cette livraison.
+Le QA écrit son verdict dans `$LOT/qa.md` (une section datée par tâche) et
+vérifie explicitement chaque critère d'acceptation de la spec. Il marque le
+point dans le suivi du lot :
 
-Vérifie explicitement chaque critère d'acceptation de la spec de l'étape 1.
+```bash
+~/.odoo19-agents/scripts/odoo-lot.sh done "$LOT" <n°> "<verdict — test ciblé>"
+```
 
-## Étape 3b — Documenter (skill `camptocamp-docs`) quand l'utilisateur voit quelque chose
+Pas de captures, pas de guide, pas de communication à ce stade : c'est la
+clôture qui les produit, une fois pour tout le lot. Si un écran change, note-le
+dans « Ce que l'utilisateur verra » de la revue, c'est ce que la clôture lira.
 
-Si la section « Ce que l'utilisateur verra » de la spec n'est pas vide, la
-livraison comprend le dossier `changelog/AAAA-MM-JJ_NN_titre-court/` du projet :
-`README.md`, `demande.md`, `tests_navigateur.md` (la recette de l'étape 3),
-`captures/`, et — pour un changement d'usage — le guide illustré DOCX + PDF et la
-communication client. Applique `~/.odoo19-agents/roles/docs.md` : captures depuis
-la copie locale restaurée, jamais depuis la production.
-
-Sans écran modifié, un `README.md` de changelog suffit.
+## Étape 4 — Capitaliser (deux minutes, ne se saute pas)
 
 Une chaîne qui ne laisse pas de trace oblige la suivante à tout redécouvrir.
 
-1. **Entrée de journal** dans `<projet>/.odoo-agents/JOURNAL.md` : date, demande,
-   ce qui a été fait, verdict QA, ligne **Appris**, ce qui reste ouvert.
+1. **Entrée de journal** dans `<projet>/.odoo-agents/JOURNAL.md` — **quinze
+   lignes au plus** : date, demande, fait, verdict, **Appris**, reste ouvert.
+   Le détail est dans le lot ; le journal est la mémoire courte, pas l'archive.
 2. **Fiche projet** : si le métier ou un piège durable a été éclairci, complète
-   `PROJECT.md` (« Compréhension métier », « Décisions actées », « Pièges connus »),
-   puis rafraîchis le relevé :
-   ```bash
-   ~/.odoo19-agents/scripts/odoo_project_scan.py <racine_du_projet>
-   ```
+   `PROJECT.md` (« Compréhension métier », « Décisions actées », « Pièges
+   connus »).
 3. **Candidate à `LESSONS.md`** : si l'incident dépasse ce projet — une règle
    fausse dans le guide, un motif de lint absent, une confusion de série — dis-le
-   explicitement dans le compte-rendu final, section « Reste à faire ». C'est
-   `/odoo-retex` qui décide de la promotion.
-
-Cette étape prend deux minutes et ne se saute pas au prétexte que la QA est verte.
+   dans le compte-rendu, section « Reste à faire ». C'est `/odoo-retex` qui
+   promeut.
 
 ## Boucle de reprise
 
-Si la QA remonte des anomalies **bloquantes** : retour à l'étape 2 pour les corriger,
-puis nouvelle QA. **Deux reprises au maximum.** Au-delà, arrête et livre l'état réel
-avec ce qui reste rouge — ne boucle pas indéfiniment et ne masque pas un échec.
+Si la QA remonte des anomalies **bloquantes** : retour à l'étape 2 pour les
+corriger, puis nouvelle QA. **Deux reprises au maximum.** Au-delà, arrête et
+livre l'état réel avec ce qui reste rouge — ne boucle pas indéfiniment et ne
+masque pas un échec.
 
-Les anomalies majeures et mineures ne déclenchent pas de reprise : elles sont listées
-dans le compte-rendu final pour arbitrage.
+Les anomalies majeures et mineures ne déclenchent pas de reprise : elles sont
+listées dans le compte-rendu final pour arbitrage, et dans `qa.md`.
 
-## Compte-rendu final
+## Compte-rendu final (court : le détail est dans le lot)
 
 ```markdown
 # <titre de la demande>
 
-**Projet** <nom> · **série** <X.Y> · **modules** <…>
+**Projet** <nom> · **série** <X.Y> · **lot** `<dossier>` (point n°<n>) · **modules** <…>
 
-## 1. Cadrage fonctionnel
-<verdict standard, contradictions retenues, hypothèses, hors périmètre>
+## Cadrage
+<verdict standard, hypothèses retenues, hors périmètre — trois lignes>
 
-## 2. Réalisation
+## Réalisation
 <fichiers créés / modifiés, choix techniques notables>
 
-## 3. Validation
-<tableau des contrôles QA, résultat des tests et des tours>
+## QA de tâche
+| Contrôle | Résultat |
+<lint --changed, install/update, tests ciblés n/n>
+| Critère d'acceptation | Couvert par | État |
 
-## 4. Critères d'acceptation
-| Critère | Couvert par | État |
+## Reste à faire / arbitrages
+<anomalies non corrigées, questions ouvertes, leçon candidate>
 
-## 5. Reste à faire / arbitrages
-<anomalies majeures et mineures non corrigées, angles morts, questions ouvertes>
-
-## 6. Livrables documentaires
-<dossier de changelog, guide (pages), communication — ou « aucun écran modifié »>
-
-## 7. Capitalisation
-<entrée de journal écrite, sections de PROJECT.md mises à jour, leçon candidate>
+## Lot
+<n> point(s) dans le lot, <m> réalisé(s). Clôture et recette complète : `/odoo-lot-close`.
 ```
 
 ## Règles
@@ -151,3 +182,6 @@ dans le compte-rendu final pour arbitrage.
 - Un arrêt aux étapes 1 ou 3 est un résultat légitime, pas un échec : dis pourquoi.
 - Ne déclare jamais « testé » ce qui n'a pas été exécuté. Si Docker n'est pas
   disponible, livre les étapes 1 et 2 et dis explicitement que l'étape 3 est partielle.
+- Ne lis pas les logs Odoo en entier : `odoo-test.sh` en extrait les erreurs et
+  termine par une ligne `RECETTE …`. Va dans le log complet seulement pour
+  localiser une erreur déjà signalée.

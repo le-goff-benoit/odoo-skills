@@ -37,7 +37,9 @@ sans vocabulaire technique>.
 | Tour navigateur (Chrome headless) | ✅ N/N étapes, `tour succeeded` |
 | Logs | ✅ 0 ERROR lié au module |
 
-Détail dans [`tests_navigateur.md`](tests_navigateur.md).
+Détail dans [`recette.md`](recette.md) (protocole outillé) et
+[`tests_navigateur.md`](tests_navigateur.md) (recette navigateur). Cadrage dans
+[`revue_fonctionnelle.md`](revue_fonctionnelle.md), revues de tâche dans [`qa.md`](qa.md).
 
 ## Réserves
 

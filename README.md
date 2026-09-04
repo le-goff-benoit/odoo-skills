@@ -1,141 +1,152 @@
 # Agents Odoo — Claude Code & Codex
 
-Trois profils d'agents partagés entre Claude Code et Codex, adossés à une base de
-connaissances extraite des sources Odoo, **calée sur la série de chaque projet**
-(17.0, 18.0, 19.0, saas~19.x), et alimentée par ce que les interventions
-précédentes ont appris.
+Trois profils d'agents et trois commandes, partagés à l'identique entre Claude
+Code et Codex, adossés à une base de connaissances extraite des sources Odoo,
+**calée sur la série de chaque projet** (17.0, 18.0, 19.0, saas~19.x), et
+alimentée par ce que les interventions précédentes ont appris.
 
 ## Installation sur un poste
 
 ```bash
-git clone <url-du-dépôt> ~/.odoo19-agents
+git clone git@github.com:le-goff-benoit/odoo-skills.git ~/.odoo19-agents
 ~/.odoo19-agents/build.sh
 ```
 
 `build.sh` génère les sous-agents et commandes Claude Code (`~/.claude/agents/`,
-`~/.claude/commands/`), les skills Codex (`~/.codex/skills/`) et injecte le bloc
-d'aiguillage dans `~/.claude/CLAUDE.md` et `~/.codex/AGENTS.md`. À relancer après
-chaque `git pull`.
+`~/.claude/commands/`, `~/.claude/skills/`), les skills Codex (`~/.codex/skills/`)
+et injecte le bloc d'aiguillage dans `~/.claude/CLAUDE.md` et `~/.codex/AGENTS.md`.
+Il vérifie en fin de course que les deux côtés portent le même texte. À relancer
+après chaque `git pull`.
 
 Prérequis :
 
 - les sources Odoo en lecture seule dans `~/odoo-sources/<série>` et
-  `~/odoo-sources/<série>-enterprise` (17.0, 18.0, 19.0, saas~19.x selon le parc) ;
-  un autre emplacement se déclare par `export ODOO_SOURCES_DIR=/chemin` ;
-- Docker (avec le plugin compose) pour la QA réelle ;
+  `~/odoo-sources/<série>-enterprise` (autre emplacement : `export ODOO_SOURCES_DIR=/chemin`) ;
+- Docker (plugin compose) pour la QA réelle ;
 - Python 3.10+.
-
-Pour le stack QA, copier `stack/.env.example` en `stack/.env` et y renseigner
-`ODOO_ADDONS_DIR` (le projet à tester) et les ports si ceux par défaut sont pris.
 
 Les fichiers générés ne s'éditent jamais à la main : toute modification se fait
 dans `roles/`, `routing.md` ou le référentiel, puis `build.sh`, puis commit.
 
-## Les trois lectures avant toute chose
+## Le premier réflexe : le briefing
 
-| Question | Où est la réponse |
-|---|---|
-| Sur quelle **série** travaille-t-on ? | `scripts/odoo_series.py <module>` — déduit de `.odoo-agents/config` ou du manifest |
-| Que sait-on de ce **projet** ? | `<projet>/.odoo-agents/PROJECT.md` et `JOURNAL.md` |
-| Quelles **erreurs** ne pas refaire ? | `LESSONS.md` |
+```bash
+python3 scripts/odoo_briefing.py <module_ou_projet>
+```
 
-Le parc est mélangé et la majorité des modules est en 18.0 : écrire du 19.0 dans
-un module 18.0 le casse à l'installation, le relire avec les règles de la 19.0
-remonte des anomalies fausses. La série n'est jamais supposée.
+Une commande, 3 à 8 Ko, qui remplace la lecture de quatre fichiers : la
+**série** et son origine, les **formes attendues** dans cette série, le **lot**
+de changelog ouvert et ses points, ce que le projet **sait déjà** (compréhension
+métier, décisions actées, pièges connus), les dernières entrées du **journal**
+et les « Appris » plus anciens, les **leçons** du dispositif applicables. Chaque
+rôle commence par là ; l'orchestrateur le passe aux sous-agents dans leur
+consigne pour qu'ils ne le recalculent pas.
 
-## Les trois profils
+Le parc est mélangé et la majorité des modules est en 18.0 : la série n'est
+jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 
-| Profil | Rôle | Quand l'appeler |
+## Les profils et les commandes
+
+| Profil / commande | Rôle | Quand |
 |---|---|---|
-| `odoo-functional-reviewer` | Analyste fonctionnel **contradicteur** | avant de coder : reformule la demande, vérifie si le standard 19.0 couvre déjà le besoin, remonte les contradictions et les non-dits, pose les questions bloquantes, produit la spec et les critères d'acceptation |
-| `odoo-developer` | Développeur | écrit le code du module dans la ligne éditoriale Odoo 19, livre les tests avec, passe le lint |
-| `odoo-qa-reviewer` | Relecteur & QA | valide : lint statique, puis installation / mise à jour / tests sur un Odoo 19 local Docker, puis parcours e2e (tours Chrome) |
-| `camptocamp-docs` (skill) | Documentation | guide utilisateur / de décision DOCX + PDF à la charte, dossier de changelog, recette, communication client — captures depuis une copie locale restaurée |
+| `odoo-functional-reviewer` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
+| `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
+| `odoo-qa-reviewer` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
+| `/odoo-feature` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
+| `/odoo-lot-close` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
+| `/odoo-retex` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
+| `camptocamp-docs` (skill) | Guide utilisateur / de décision DOCX + PDF à la charte, communication client, captures depuis la copie locale | à la clôture, ou sur demande |
 
-## Aiguillage automatique
+## Tâche légère, lot lourd
 
-`~/.claude/CLAUDE.md` et `~/.codex/AGENTS.md` (générés depuis `routing.md`) portent la
-même règle dans les deux outils :
+Une demande de développement s'inscrit dans un **lot** de changelog
+(`changelog/AAAA-MM-JJ_NN_titre/`) qui regroupe les demandes d'une même
+livraison. Le cycle :
 
-| Nature de la demande | Réponse |
-|---|---|
-| **Fonctionnel pur** (cadrer, challenger, « Odoo sait-il faire… ») | `odoo-functional-reviewer` **seul**, aucun code |
-| **Développement** | les **trois en chaîne**, automatiquement — c'est `/odoo-feature` |
-| **Validation seule** (« relis », « teste ») | `odoo-qa-reviewer` **seul** |
-| **Amélioration du dispositif** (« qu'a-t-on appris », « le guide est-il à jour ») | `/odoo-retex` |
-| **Documentation & livraison** (guide, changelog, recette, communication) | skill `camptocamp-docs` |
+```
+odoo-lot.sh open  ──▶  /odoo-feature ×n  ──▶  /odoo-lot-close  ──▶  commit, déploiement
+   demande.md          revue_fonctionnelle.md      recette.md, tests_navigateur.md
+   README (suivi)      code + tests, qa.md         captures/, guide, communication
+   .base (git)         journal (≤ 15 lignes)       README final, journal de lot
+```
 
-La chaîne ne s'arrête qu'en trois cas : le standard couvre déjà le besoin, une question
-bloquante subsiste, ou la QA reste rouge après deux reprises.
+- **Pendant le lot**, chaque tâche reçoit une QA proportionnée : lint des
+  fichiers modifiés depuis l'ouverture, installation/mise à jour sur la base de
+  QA, tests ciblés. Pas de captures, pas de guide.
+- **À la clôture**, tout est rejoué une fois sur l'état exact qui partira :
+  `odoo-recette.sh` enchaîne lint, base neuve, `-u`, suite complète (tours
+  compris), désinstallation, mise à niveau sur la copie du client, et écrit un
+  tableau. Puis recette navigateur, captures, livrables client, README final
+  avec les versions lues dans les manifests, message de commit proposé.
+- **Exception** : une tâche qui touche aux droits, à la compta, à la
+  facturation ou aux données existantes se valide immédiatement au niveau du lot.
+- La **version** du manifest s'incrémente une fois par lot, à la clôture ; la
+  version livrée est celle qui a été testée.
+
+Les fichiers du lot sont le canal entre les étapes — pas la conversation. Côté
+Claude Code, chaque étape est un sous-agent qui reçoit le briefing et les chemins ;
+côté Codex, le même rôle est appliqué en séquence par l'agent principal.
 
 ### Utilisation
 
-**Claude Code** — les profils sont des sous-agents dans `~/.claude/agents/` :
-
 ```
 > /odoo-feature ajoute un champ « référence chantier » sur la commande client
+> /odoo-feature corrige le calcul de la remise sur les lignes de kit      # même lot
+> /odoo-lot-close
 > utilise odoo-functional-reviewer pour challenger cette demande : …
-> lance odoo-qa-reviewer sur alamaison_customisation
-> /odoo-retex          # relit les journaux, met le référentiel à jour
+> lance odoo-qa-reviewer sur alamaison_customisation                     # mode lot
+> /odoo-retex
 ```
 
-**Codex** — les profils sont des skills dans `~/.codex/skills/` :
-
-```
-/odoo-feature  ajoute un champ « référence chantier » sur la commande client
-/odoo-functional-reviewer  …
-/odoo-developer  …
-/odoo-qa-reviewer  …
-```
+Codex : mêmes noms, en skills (`/odoo-feature …`, `/odoo-lot-close`, `/odoo-retex`,
+`/odoo-functional-reviewer …`, `/odoo-developer …`, `/odoo-qa-reviewer …`).
 
 ## Arborescence
 
 ```
 ~/.odoo19-agents/
-├── ODOO19_STYLE_GUIDE.md   ← la ligne éditoriale de la 19.0
+├── ODOO19_STYLE_GUIDE.md   ← la ligne éditoriale de la 19.0 (+ § 10 commits, versions, lots)
 ├── SERIES_MATRIX.md        ← ce qui change d'une série à l'autre (fait foi)
-├── LESSONS.md              ← mémoire longue : les erreurs déjà payées
+├── LESSONS.md              ← mémoire longue : les erreurs déjà payées (+ date du dernier retex)
 ├── PLATEFORMES.md          ← ce qui change d'un hébergement à l'autre (fait foi)
-├── routing.md              ← règle d'aiguillage (→ CLAUDE.md et AGENTS.md)
+├── routing.md              ← aiguillage (→ CLAUDE.md et AGENTS.md), volontairement court
 ├── roles/                  ← les prompts, SOURCE UNIQUE
 │   ├── functional-review.md
 │   ├── implementation.md
 │   ├── qa-review.md
-│   ├── orchestration.md    ← la chaîne /odoo-feature
-│   ├── retex.md            ← /odoo-retex, l'amélioration continue
+│   ├── orchestration.md    ← /odoo-feature
+│   ├── lot-close.md        ← /odoo-lot-close
+│   ├── retex.md            ← /odoo-retex
 │   └── docs.md             ← skill camptocamp-docs
-├── docs/                   ← livrables documentaires
-│   ├── c2c_docx.py         (charte Camptocamp : Brand, Guide, DOCX → PDF, relecture)
-│   ├── assets/             (logos Camptocamp)
-│   └── templates/          (changelog/*.md, generate_guide.py, capture_guide.py)
+├── docs/                   ← livrables documentaires (charte, gabarits du changelog)
+│   └── templates/changelog/  suivi.md (lot ouvert), README.md (final), demande.md,
+│                             tests_navigateur.md, communication_client.txt
 ├── stack/                  ← Odoo local pour la QA, une image par série
-│   ├── docker-compose.yml
-│   ├── Dockerfile          (odoo:<série> + google-chrome + websocket-client + ruff)
-│   ├── odoo.conf
-│   ├── .env.example
-│   └── artifacts/          (logs de test, captures d'écran)
 ├── scripts/
+│   ├── odoo_briefing.py    briefing compact d'un projet — le premier réflexe
 │   ├── odoo_series.py      résolution de la série cible d'un module
-│   ├── series-env.sh       bootstrap de série pour les scripts du stack
-│   ├── odoo_project_scan.py écrit <projet>/.odoo-agents/PROJECT.md
-│   ├── odoo-lint.sh        ruff (config Odoo) + contrôles Odoo
+│   ├── odoo_project_scan.py écrit <projet>/.odoo-agents/PROJECT.md (relevé)
+│   ├── odoo-lot.sh         open / current / add / done / changed / modules / close
+│   ├── odoo-lint.sh        ruff (config Odoo) + contrôles Odoo, --changed <ref>
 │   ├── odoo_lint.py        manifest, XML, sécurité, tests, motifs datés par série
-│   ├── odoo-stack.sh       build / up / down / reset / logs / psql / odoo-shell
-│   ├── odoo-test.sh        install + update + tests + tours + désinstall + logs
-│   ├── odoo-shot.sh        capture d'écran authentifiée (Chrome du conteneur, CDP)
-│   ├── odoo_shot.py        pilote CDP, exécuté dans le conteneur
-│   └── odoo-pdf.sh         rapport QWeb → PDF réel et mis en forme
+│   ├── odoo-test.sh        install + update + tests + tours + désinstall + logs, base par module
+│   ├── odoo-recette.sh     le protocole complet de clôture, en un tableau
+│   ├── odoo-stack.sh       build / up / down / reset / logs / psql / odoo-shell / dbs
+│   ├── odoo-restore.sh     sauvegarde client → base locale neutralisée
+│   ├── odoo-config-inventory.sh  Studio, automatisations, vues, rapports d'une base
+│   ├── odoo_instance.py    accès déclaré aux bases distantes (prod en lecture seule)
+│   ├── odoo-shot.sh / odoo_capture.py / odoo-pdf.sh   captures et PDF réels
+│   └── series-env.sh       bootstrap de série pour les scripts du stack
 ├── build.sh                régénère les profils Claude et Codex depuis roles/
 └── README.md
 ```
 
-**Pour modifier un profil ou l'aiguillage : éditer `roles/*.md` ou `routing.md`,
-puis `./build.sh`.** Les fichiers suivants sont **générés**, ne pas les éditer :
+Fichiers **générés**, à ne pas éditer :
 
 ```
-~/.claude/agents/odoo-*.md          ~/.codex/skills/odoo-*/SKILL.md
-~/.claude/commands/odoo-feature.md  ~/.codex/skills/odoo-feature/SKILL.md
-~/.claude/commands/odoo-retex.md    ~/.codex/skills/odoo-retex/SKILL.md
+~/.claude/agents/odoo-*.md                 ~/.codex/skills/odoo-*/SKILL.md
+~/.claude/commands/odoo-{feature,lot-close,retex}.md
+~/.claude/skills/camptocamp-docs/          ~/.codex/skills/camptocamp-docs/
 ~/.claude/CLAUDE.md   ~/.codex/AGENTS.md   (bloc délimité uniquement)
 ```
 
@@ -146,101 +157,100 @@ Créé par `scripts/odoo_project_scan.py`, à la racine du projet client :
 | Fichier | Contenu | Écrit par |
 |---|---|---|
 | `config` | `series = 18.0` — fait autorité sur la détection | le scan, puis l'humain |
-| `PROJECT.md` | **relevé** régénérable (modules, modèles créés/étendus, dépendances community/enterprise, sécurité, tests, dette lint, zones chaudes git) + **compréhension** écrite à la main (métier, décisions actées, pièges connus), jamais écrasée | le scan / les agents |
-| `JOURNAL.md` | une entrée par intervention : demande, réalisation, verdict QA, **Appris**, reste ouvert | le profil QA |
+| `PROJECT.md` | **relevé** régénérable (modules, modèles, dépendances, sécurité, tests, dette lint, zones chaudes git, lots) + **compréhension** écrite à la main (métier, décisions actées, pièges connus), jamais écrasée | le scan / les agents |
+| `JOURNAL.md` | une entrée par intervention, **quinze lignes au plus** : demande, fait, verdict, **Appris**, reste ouvert | le QA, la clôture |
 
-La boucle d'amélioration : le QA écrit ce qu'il a appris dans le `JOURNAL.md`
-→ `/odoo-retex` relit tous les journaux, garde ce qui est récurrent ou coûteux,
-le promeut dans `LESSONS.md` **avec un effet obligatoire** (un motif de lint, une
-correction du guide, ou une règle de rôle) → `build.sh` rediffuse.
+Le journal est la mémoire courte ; l'analyse détaillée vit dans le dossier du
+lot. Le briefing ne montre que les dernières entrées et extrait les « Appris »
+des autres : un journal qui gonfle ne coûte plus de tokens, mais reste lisible
+par l'humain s'il tient ses quinze lignes.
 
-Dans `CLAUDE.md` et `AGENTS.md`, seul le bloc entre les marqueurs
-`<!-- odoo19-agents:début -->` et `<!-- odoo19-agents:fin -->` est régénéré :
-ce que tu écris autour est préservé.
+La boucle d'amélioration : le QA écrit ce qu'il a appris → `/odoo-retex` relit
+tous les journaux et les recettes, garde ce qui est récurrent ou coûteux, le
+promeut dans `LESSONS.md` **avec un effet obligatoire** (motif de lint,
+correction du guide, règle de rôle, ou réglage du briefing) → `build.sh` rediffuse.
 
 ## Outillage
 
 ```bash
-# Série cible d'un module, et fiche de contexte du projet
+# Briefing, série, fiche de contexte
+python3 scripts/odoo_briefing.py ~/mon_projet
 python3 scripts/odoo_series.py /chemin/vers/mon_module
 scripts/odoo_project_scan.py ~/mon_projet
 
-# Lint d'un module (série déduite du module, annoncée en tête de sortie)
+# Lot
+scripts/odoo-lot.sh open ~/mon_projet "Contrats à facturer"
+scripts/odoo-lot.sh current ~/mon_projet
+scripts/odoo-lot.sh add <lot> "Filtre corrigé" "TestContractsToInvoice"
+scripts/odoo-lot.sh done <lot> 1 "vert"
+scripts/odoo-lot.sh modules <lot>
+
+# Lint : tout, ou seulement ce qui a changé depuis l'ouverture du lot
 scripts/odoo-lint.sh /chemin/vers/mon_module
+scripts/odoo-lint.sh --changed "$(cat <lot>/.base)" /chemin/vers/mon_module
 scripts/odoo-lint.sh --series 19.0 /chemin/vers/mon_module   # chiffrer une migration
 
-# Stack de test
+# Stack de test (une image par série)
 export ODOO_ADDONS_DIR=~/mon_projet   # dossier CONTENANT le module
-scripts/odoo-stack.sh build      # UNE FOIS PAR SÉRIE utilisée
-scripts/odoo-stack.sh up         # http://localhost:8079  (admin/admin)
+scripts/odoo-stack.sh build           # UNE FOIS PAR SÉRIE
+scripts/odoo-stack.sh up              # http://localhost:8079  (admin/admin)
 
-# Tests complets
-scripts/odoo-test.sh mon_module --fresh --update --uninstall
-scripts/odoo-test.sh mon_module --tours          # uniquement les parcours e2e
-scripts/odoo-test.sh mon_module --tags /mon_module:TestMaClasse.test_x
+# QA de tâche : tests ciblés (base odoo_qa_<série>_<module>, jamais partagée)
+scripts/odoo-test.sh mon_module --update --tags /mon_module:TestMaClasse
 
-# Lint restreint aux fichiers modifiés (module historique porteur de dette)
-scripts/odoo-lint.sh --changed [<ref-git>] /chemin/vers/mon_module
+# QA de lot : le protocole complet, en un tableau (recette.md dans le lot)
+scripts/odoo-recette.sh mon_module --lot <lot> --db client_test
 
-# Remonter une sauvegarde client (zip Odoo.sh / gestionnaire de bases, .sql, .dump),
-# neutralisée, admin/admin, série déduite du dump
+# Sauvegarde client → base locale neutralisée, inventaire de ce qui vit en base
 scripts/odoo-restore.sh ~/Downloads/client-2026-08-19.zip --db client_test
-scripts/odoo-stack.sh dbs
-scripts/odoo-config-inventory.sh client_test    # Studio, automatisations, vues, rapports, modules tiers
+scripts/odoo-config-inventory.sh client_test
 
-# Accès déclaré à une base distante (identifiants hors dépôt, production en lecture seule)
+# Accès déclaré à une base distante : secret dans le trousseau GNOME (libsecret),
+# métadonnées dans ~/.odoo-agents/instances/<projet>.json ; production en lecture seule
 scripts/odoo_instance.py add mon_projet
 scripts/odoo_instance.py check mon_projet staging
-scripts/odoo_instance.py backup mon_projet staging --out client.zip   # on-premise / Docker
+scripts/odoo_instance.py migrate mon_projet      # secrets JSON existants → trousseau
 
-# Captures d'écran authentifiées
-scripts/odoo-shot.sh /odoo/sales --out liste.png
+# Captures, PDF réels
 scripts/odoo-shot.sh "/odoo/action-mod.action_x/3" --wait ".o_form_view" --full
-scripts/odoo-shot.sh /my/orders --login portal --password portal --wait body
-
-# Captures pour la documentation (Playwright sur le poste : recadrage, 2x, langue du client)
 scripts/odoo_capture.py /odoo/project --db client_test --lang fr_FR --clip .o_form_view --out 01.png
-
-# Rapport QWeb en PDF réel (+ HTML source pour diagnostic)
 scripts/odoo-pdf.sh sale.action_report_saleorder 12 --out devis.pdf --html
-
-scripts/odoo-stack.sh down
 ```
 
-Ports par défaut : `8079` (HTTP), `8082` (gevent), `5439` (PostgreSQL) — choisis pour
-ne pas entrer en conflit avec les autres stacks du poste. Chaque série a son projet
-compose (`odoo-qa-18_0`, `odoo-qa-19_0`…), son image (`odoo-qa:18.0`), ses volumes
-et sa base (`odoo_qa_18_0`) : deux séries cohabitent, mais pas sur les mêmes ports —
-régler `ODOO_HTTP_PORT` / `ODOO_DB_PORT` pour en démarrer deux simultanément.
+Ports par défaut : `8079` (HTTP), `8082` (gevent), `5439` (PostgreSQL). Chaque
+série a son projet compose (`odoo-qa-18_0`, `odoo-qa-19_0`), son image, ses
+volumes ; chaque module a sa base de test. Deux séries cohabitent (ports à
+régler) ; deux agents sur la même série aussi, tant qu'ils ne partagent pas de
+base.
 
-## Pièges déjà traités dans le stack
+## Pièges déjà traités dans l'outillage
 
-- L'image `odoo:19.0` est basée sur **Ubuntu 24.04** : `apt install chromium` n'y
-  installe qu'un stub vers le snap. Les tours étaient ignorés silencieusement.
-  → le Dockerfile installe le vrai `google-chrome-stable`.
-- Sans **`websocket-client`**, `HttpCase` *skippe* tous les tours sans échouer.
-  → installé dans l'image, et `odoo-test.sh` traite un test ignoré pour cause de
-  dépendance manquante comme un échec.
+- L'image `odoo:19.0` est basée sur **Ubuntu 24.04** : `apt install chromium`
+  n'y installe qu'un stub vers le snap → le Dockerfile installe `google-chrome-stable`.
+- Sans **`websocket-client`**, `HttpCase` *skippe* tous les tours sans échouer
+  → installé dans l'image, et un test ignoré faute de dépendance est un échec.
 - Le `ruff.toml` officiel d'Odoo est **plus strict que le code d'Odoo lui-même**
-  (61 findings sur `sale_order.py`). `odoo-lint.sh` fait deux passes : une passe
-  bloquante sur les règles réellement respectées par le standard, une passe
-  « conseil » avec la configuration complète.
-- Le conteneur tourne en uid 101 : `stack/artifacts/` est mis en 777 pour que
-  Chrome puisse y écrire ses captures.
+  → `odoo-lint.sh` fait une passe bloquante (règles réellement respectées) et une
+  passe « conseil ».
+- Le conteneur tourne en uid 101 : `stack/artifacts/` est en 777 ; un module
+  dans un dossier non lisible par cet uid est **ignoré** par Odoo.
+- **`odoo -i <module>` sur un module introuvable sort en 0** avec un simple
+  `WARNING invalid module names, ignored` → `odoo-test.sh` le traite comme un échec.
+- **Base de test partagée** : deux projets de la même série se droppaient la
+  base l'un de l'autre avec `--fresh` → une base par module, et PostgreSQL n'est
+  jamais arrêté s'il tournait déjà avant l'appel.
 - Chrome refuse les connexions CDP dont l'`Origin` n'est pas autorisée
-  (`--remote-allow-origins=*`), sinon handshake websocket 403.
-- **PDF QWeb** : trois pièges cumulés, tous traités par `odoo-pdf.sh` —
-  (1) `_render_qweb_pdf` retombe sur du HTML en contexte de test ;
-  (2) sans serveur HTTP en marche, wkhtmltopdf ne charge pas les CSS ;
-  (3) les bundles d'assets sont produits par le processus **serveur**, donc un
-  rendu lancé depuis `odoo shell` référence des URL en 404.
-  Le script télécharge le PDF par la route réelle `/report/pdf/<report>/<ids>`.
-  Signe qui ne trompe pas : un PDF nu embarque `NimbusSans`, un PDF correct `Lato`.
+  (`--remote-allow-origins=*`).
+- **PDF QWeb** : `_render_qweb_pdf` retombe sur du HTML en contexte de test ;
+  sans serveur HTTP, wkhtmltopdf ne charge pas les CSS ; les bundles sont
+  produits par le processus serveur → `odoo-pdf.sh` passe par la route réelle
+  `/report/pdf/<report>/<ids>`. Un PDF nu embarque `NimbusSans`, un PDF correct `Lato`.
+- Un relevé pris depuis un **worktree git** inscrit un chemin qui disparaîtra
+  avec lui → le scan et le briefing le signalent.
 
 ## Ce que les agents ont réellement à disposition
 
-Tout est **dans le conteneur**, pas sur l'hôte — c'est la réponse à « aucun navigateur
-disponible » et « wkhtmltopdf absent » :
+Tout est **dans le conteneur**, pas sur l'hôte :
 
 | Capacité | Où | Comment y accéder |
 |---|---|---|

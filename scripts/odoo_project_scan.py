@@ -156,6 +156,11 @@ def git_facts(root: Path) -> list[str]:
     if not (root / ".git").exists():
         return ["dépôt git : aucun"]
     facts = []
+    common = run(["git", "rev-parse", "--git-common-dir"], root)
+    if common and common not in (".git", str(root / ".git")):
+        facts.append(f"⚠️ **worktree git** — dépôt principal : `{Path(common).resolve().parent}` "
+                     "(ce relevé a été pris depuis le worktree ; les chemins ci-dessous "
+                     "peuvent disparaître avec lui)")
     count = run(["git", "rev-list", "--count", "HEAD"], root)
     last = run(["git", "log", "-1", "--format=%h %ad %s", "--date=short"], root)
     branch = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], root)
@@ -191,6 +196,14 @@ def scan(root: Path, explicit: str | None) -> str:
     ]
     for fact in git_facts(root):
         lines.append(f"- {fact}")
+    lots = sorted(p for p in (root / "changelog").glob("*/") if p.is_dir()) \
+        if (root / "changelog").is_dir() else []
+    if lots:
+        open_lots = [p.name for p in lots
+                     if (p / "README.md").is_file()
+                     and "<!-- lot ouvert -->" in (p / "README.md").read_text(encoding="utf-8", errors="replace")]
+        lines.append(f"- **Changelog** : {len(lots)} lot(s), dernier `{lots[-1].name}`"
+                     + (f", **ouvert** : `{open_lots[-1]}`" if open_lots else ", aucun ouvert"))
 
     lines += ["", f"## Modules custom ({len(modules)})", ""]
     for module in modules:

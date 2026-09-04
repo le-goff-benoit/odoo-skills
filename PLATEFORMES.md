@@ -178,7 +178,8 @@ un `psql` ou un `ssh` ne s'y applique pas.
   filestore, neutralise (`odoo neutralize`), remet `admin/admin` et liste les modules
   installés absents du chemin des addons. L'image Postgres du stack embarque pgvector.
 - `scripts/odoo_instance.py` déclare les accès aux instances distantes d'un projet
-  (identifiants hors dépôt), sait télécharger une sauvegarde par `/web/database/backup`
+  (secret dans le trousseau du bureau via libsecret quand la session le permet,
+  sinon fichier 600 ; `ODOO_INSTANCE_SECRET` pour une session SSH), sait télécharger une sauvegarde par `/web/database/backup`
   (on-premise et Docker uniquement) et **refuse toute écriture sur une instance
   `production`** sans confirmation explicite.
 - Rien ne lit encore `$ODOO_STAGE` sur Odoo.sh avant un push : c'est le premier

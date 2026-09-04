@@ -10,12 +10,16 @@ modifié n'a pas eu lieu.
 ## 1. Relire ce qui s'est passé
 
 ```bash
-# Les journaux de tous les projets outillés
+# Depuis quand ? (marqueur en tête de LESSONS.md, à mettre à jour en fin de passage)
+grep -o "dernier-retex: [0-9-]*" ~/.odoo19-agents/LESSONS.md
+# Les journaux de tous les projets outillés, et leurs entrées depuis cette date
 ls -t ~/*/.odoo-agents/JOURNAL.md
-# Ce qui a été appris, tous projets confondus
-grep -h -A2 "^\*\*Appris\*\*" ~/*/.odoo-agents/JOURNAL.md
-# Les réserves et anomalies découvertes en recette, dans les changelogs livrés
-grep -l "" ~/*/changelog/*/README.md 2>/dev/null | xargs -r grep -h -A6 "^## Réserves"
+grep -h "^## 20" ~/*/.odoo-agents/JOURNAL.md | sort
+# Ce qui a été appris, tous projets confondus (une puce par leçon, sans relire les journaux)
+for p in ~/*/.odoo-agents; do python3 ~/.odoo19-agents/scripts/odoo_briefing.py "$(dirname "$p")" --journal 0 2>/dev/null | sed -n '/^## Appris/,/^## Leçons/p'; done
+# Les réserves des recettes et des changelogs livrés
+grep -h -A6 "^## Réserves" ~/*/changelog/*/README.md 2>/dev/null
+grep -h "❌\|⚠️" ~/*/changelog/*/recette.md 2>/dev/null
 # L'état de la mémoire longue
 cat ~/.odoo19-agents/LESSONS.md
 # Les références que les leçons alimentent
@@ -80,6 +84,7 @@ Trois effets possibles, à choisir selon la nature :
 | Une forme de code fausse ou datée | un motif daté dans `scripts/odoo_lint.py` (`since` / `before`) + une ligne dans `SERIES_MATRIX.md` |
 | Une règle du guide inexacte | correction de `ODOO19_STYLE_GUIDE.md`, avec le comptage qui la justifie |
 | Une méthode de travail défaillante | une règle dans le `roles/*.md` du profil concerné |
+| Un contexte trop lourd ou trop léger (agent qui relit 60 Ko, ou qui ignore un piège connu) | `scripts/odoo_briefing.py` : ce qu'il montre, ce qu'il tronque |
 | Un outil du dispositif qui a menti ou manqué (script, stack, image) | correction du script, et le cas dans « Pièges déjà traités » du `README.md` |
 | Un comportement d'hébergement (déploiement, restauration, exploitation) | une entrée dans `PLATEFORMES.md`, avec sa provenance `[vérifié]` ou `[doc]` |
 
@@ -98,6 +103,8 @@ trompe fait plus de dégâts qu'un contrôle absent.
 ## 4. Reconstruire et vérifier
 
 ```bash
+# Dater le passage : le compteur de /odoo-lot-close et la prochaine relecture partent d'ici
+sed -i "s/dernier-retex: [0-9-]*/dernier-retex: $(date +%F)/" ~/.odoo19-agents/LESSONS.md
 ~/.odoo19-agents/build.sh
 # Non-régression : le lint doit rester propre là où il l'était
 ~/.odoo19-agents/scripts/odoo-lint.sh <un_module_sain>
@@ -142,6 +149,10 @@ done
 - Tu préfères supprimer une règle devenue fausse plutôt qu'en ajouter une de plus.
   Le référentiel doit rester lisible d'un bout à l'autre.
 - Tu ne réécris pas les journaux de projet : ils sont l'historique, pas un
-  brouillon.
+  brouillon. Un journal qui dépasse 300 lignes est un signe que les entrées
+  sont trop longues (quinze lignes chacune) : dis-le au projet, ne le tronque pas.
+- Tu vérifies que les deux côtés sont identiques après `build.sh` : les
+  profils Claude (`~/.claude/agents`, `commands`, `skills`) et Codex
+  (`~/.codex/skills`) sont générés du même `roles/*.md`.
 - Si rien ne s'est passé qui mérite une leçon, dis-le en une ligne. Un retour
   d'expérience vide est un bon signe, pas un échec.

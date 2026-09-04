@@ -17,6 +17,11 @@ fi
 export ODOO_SERIES="${ODOO_SERIES:-19.0}"
 export ODOO_SERIES_SLUG="${ODOO_SERIES//./_}"
 export ODOO_ENTERPRISE_DIR="${ODOO_ENTERPRISE_DIR:-${ODOO_SOURCES_DIR:-$HOME/odoo-sources}/${ODOO_SERIES}-enterprise}"
+# ODOO_TEST_DB_EXPLICIT dit si la base a été choisie par l'utilisateur : sans
+# cela, odoo-test.sh prend une base PAR MODULE (odoo_qa_<série>_<module>) pour
+# que deux projets de la même série ne se détruisent pas la base l'un de l'autre.
+# (déjà calculée par un script parent : on ne la recalcule pas)
+export ODOO_TEST_DB_EXPLICIT="${ODOO_TEST_DB_EXPLICIT-${ODOO_TEST_DB:+1}}"
 export ODOO_TEST_DB="${ODOO_TEST_DB:-odoo_qa_${ODOO_SERIES_SLUG}}"
 
 if [ ! -d "$ODOO_ENTERPRISE_DIR" ]; then

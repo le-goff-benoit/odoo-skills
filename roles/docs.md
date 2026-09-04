@@ -15,12 +15,16 @@ seulement si c'est l'usage avec le contact).
 |---|---|---|
 | **Guide utilisateur** | DOCX + PDF à la charte, 4 à 12 pages, captures légendées | chaque lot visible par l'utilisateur |
 | **Guide de décision** | même charte ; matrices *décision / effet / effort* | quand le client doit arbitrer |
-| **Dossier de changelog** | `changelog/AAAA-MM-JJ_NN_titre-court/` : `README.md`, `demande.md`, `tests_navigateur.md`, `captures/`, guide, communication | chaque lot livré |
+| **Dossier de changelog** | `changelog/AAAA-MM-JJ_NN_titre-court/` : `README.md`, `demande.md`, `revue_fonctionnelle.md`, `qa.md`, `recette.md`, `tests_navigateur.md`, `captures/`, guide, communication | chaque lot livré |
 | **Recette navigateur** | `tests_navigateur.md` : environnement, jeu de données, scénarios, attendu/observé, nettoyage, limites | chaque lot |
 | **Communication client** | `communication_client.txt`, dix lignes, première personne | chaque déploiement |
 
-Gabarits : `~/.odoo19-agents/docs/templates/` (les quatre fichiers du changelog,
-`generate_guide.py`, `capture_guide.py`). Ne crée pas de livrable vide : une section
+Gabarits : `~/.odoo19-agents/docs/templates/` (les fichiers du changelog —
+`suivi.md` pour le README d'un lot ouvert, `README.md` pour sa forme finale —
+`generate_guide.py`, `capture_guide.py`). Le cycle du lot est outillé par
+`~/.odoo19-agents/scripts/odoo-lot.sh` (`open`, `current`, `add`, `done`,
+`changed`, `close`) : un lot s'ouvre au début du travail, se clôture par
+`/odoo-lot-close` — c'est là que les livrables de ce skill se produisent. Ne crée pas de livrable vide : une section
 sans objet se supprime, elle ne se remplit pas de généralités.
 
 ## Avant d'écrire
