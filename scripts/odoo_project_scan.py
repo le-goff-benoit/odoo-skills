@@ -196,13 +196,13 @@ def scan(root: Path, explicit: str | None) -> str:
     ]
     for fact in git_facts(root):
         lines.append(f"- {fact}")
-    lots = sorted(p for p in (root / "changelog").glob("*/") if p.is_dir()) \
+    releases = sorted(p for p in (root / "changelog").glob("*/") if p.is_dir()) \
         if (root / "changelog").is_dir() else []
-    if lots:
-        open_lots = [p.name for p in lots
+    if releases:
+        open_lots = [p.name for p in releases
                      if (p / "README.md").is_file()
-                     and "<!-- lot ouvert -->" in (p / "README.md").read_text(encoding="utf-8", errors="replace")]
-        lines.append(f"- **Changelog** : {len(lots)} lot(s), dernier `{lots[-1].name}`"
+                     and "<!-- release ouverte -->" in (p / "README.md").read_text(encoding="utf-8", errors="replace")]
+        lines.append(f"- **Changelog** : {len(releases)} release(s), dernier `{releases[-1].name}`"
                      + (f", **ouvert** : `{open_lots[-1]}`" if open_lots else ", aucun ouvert"))
 
     lines += ["", f"## Modules custom ({len(modules)})", ""]
@@ -264,10 +264,10 @@ def scan(root: Path, explicit: str | None) -> str:
         "```bash",
         f"python3 {Path(__file__).resolve().parent}/odoo_briefing.py {root}      # le premier réflexe",
         f"export ODOO_ADDONS_DIR={root}",
-        f"LOT=$({Path(__file__).resolve().parent}/odoo-lot.sh current {root})",
-        f"{Path(__file__).resolve().parent}/odoo-lint.sh --changed \"$(cat $LOT/.base)\" <module>",
+        f"RELEASE=$({Path(__file__).resolve().parent}/odoo-release.sh current {root})",
+        f"{Path(__file__).resolve().parent}/odoo-lint.sh --changed \"$(cat $RELEASE/.base)\" <module>",
         f"{Path(__file__).resolve().parent}/odoo-test.sh <module> --update --tags /<module>:<TestClasse>   # QA de tâche",
-        f"{Path(__file__).resolve().parent}/odoo-recette.sh <module> --lot \"$LOT\" [--db <copie_client>]   # clôture",
+        f"{Path(__file__).resolve().parent}/odoo-recette.sh <module> --release \"$RELEASE\" [--db <copie_client>]   # clôture",
         "```",
         "",
         MARK_END,
@@ -318,8 +318,8 @@ def main(argv: list[str]) -> int:
             "# Configuration des agents Odoo pour ce projet.\n"
             "# La série fait autorité sur la détection automatique.\n"
             f"series = {detected}\n"
-            "# Mot du projet pour un lot de changelog (release, sprint…) ; défaut : lot.\n"
-            "# lot_label = lot\n",
+            "# Mot du projet pour une release de changelog (release, sprint…) ; défaut : release.\n"
+            "# lot_label = release\n",
             encoding="utf-8",
         )
         print(f"  ✓ {config}  (series = {detected})")

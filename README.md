@@ -35,7 +35,7 @@ python3 scripts/odoo_briefing.py <module_ou_projet>
 ```
 
 Une commande, 3 à 8 Ko, qui remplace la lecture de quatre fichiers : la
-**série** et son origine, les **formes attendues** dans cette série, le **lot**
+**série** et son origine, les **formes attendues** dans cette série, le **release**
 de changelog ouvert et ses points, ce que le projet **sait déjà** (compréhension
 métier, décisions actées, pièges connus), les dernières entrées du **journal**
 et les « Appris » plus anciens, les **leçons** du dispositif applicables. Chaque
@@ -50,27 +50,27 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 | Profil / commande | Rôle | Quand |
 |---|---|---|
 | `odoo-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
-| `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
-| `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
-| `/odoo-new` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
-| `/odoo-close` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
+| `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant la release |
+| `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **release** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
+| `/odoo-new` | La chaîne sur une demande : briefing → release → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
+| `/odoo-close` | Clôture de la release : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
 | `/odoo-feedback` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
 | `camptocamp-docs` (skill) | Guide utilisateur / de décision DOCX + PDF à la charte, communication client, captures depuis la copie locale | à la clôture, ou sur demande |
 
-## Tâche légère, lot lourd
+## Tâche légère, release lourde
 
-Une demande de développement s'inscrit dans un **lot** de changelog
+Une demande de développement s'inscrit dans une **release** de changelog
 (`changelog/AAAA-MM-JJ_NN_titre/`) qui regroupe les demandes d'une même
 livraison. Le cycle :
 
 ```
-odoo-lot.sh open  ──▶  /odoo-new ×n  ──▶  /odoo-close  ──▶  commit, déploiement
+odoo-release.sh open  ──▶  /odoo-new ×n  ──▶  /odoo-close  ──▶  commit, déploiement
    demande.md          revue_fonctionnelle.md      recette.md, tests_navigateur.md
    README (suivi)      code + tests, qa.md         captures/, guide, communication
-   .base (git)         journal (≤ 15 lignes)       README final, journal de lot
+   .base (git)         journal (≤ 15 lignes)       README final, journal de release
 ```
 
-- **Pendant le lot**, chaque tâche reçoit une QA proportionnée : lint des
+- **Pendant la release**, chaque tâche reçoit une QA proportionnée : lint des
   fichiers modifiés depuis l'ouverture, installation/mise à jour sur la base de
   QA, tests ciblés. Pas de captures, pas de guide.
 - **À la clôture**, tout est rejoué une fois sur l'état exact qui partira :
@@ -79,11 +79,11 @@ odoo-lot.sh open  ──▶  /odoo-new ×n  ──▶  /odoo-close  ──▶  c
   tableau. Puis recette navigateur, captures, livrables client, README final
   avec les versions lues dans les manifests, message de commit proposé.
 - **Exception** : une tâche qui touche aux droits, à la compta, à la
-  facturation ou aux données existantes se valide immédiatement au niveau du lot.
-- La **version** du manifest s'incrémente une fois par lot, à la clôture ; la
+  facturation ou aux données existantes se valide immédiatement au niveau de la release.
+- La **version** du manifest s'incrémente une fois par release, à la clôture ; la
   version livrée est celle qui a été testée.
 
-Les fichiers du lot sont le canal entre les étapes — pas la conversation. Côté
+Les fichiers de la release sont le canal entre les étapes — pas la conversation. Côté
 Claude Code, chaque étape est un sous-agent qui reçoit le briefing et les chemins ;
 côté Codex, le même rôle est appliqué en séquence par l'agent principal.
 
@@ -91,10 +91,10 @@ côté Codex, le même rôle est appliqué en séquence par l'agent principal.
 
 ```
 > /odoo-new ajoute un champ « référence chantier » sur la commande client
-> /odoo-new corrige le calcul de la remise sur les lignes de kit      # même lot
+> /odoo-new corrige le calcul de la remise sur les lignes de kit      # même release
 > /odoo-close
 > utilise odoo-analyst pour challenger cette demande : …
-> lance odoo-tester sur alamaison_customisation                     # mode lot
+> lance odoo-tester sur alamaison_customisation                     # mode release
 > /odoo-feedback
 ```
 
@@ -105,7 +105,7 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 
 ```
 ~/.odoo19-agents/
-├── ODOO19_STYLE_GUIDE.md   ← la ligne éditoriale de la 19.0 (+ § 10 commits, versions, lots)
+├── ODOO19_STYLE_GUIDE.md   ← la ligne éditoriale de la 19.0 (+ § 10 commits, versions, releases)
 ├── SERIES_MATRIX.md        ← ce qui change d'une série à l'autre (fait foi)
 ├── LESSONS.md              ← mémoire longue : les erreurs déjà payées (+ date du dernier retex)
 ├── PLATEFORMES.md          ← ce qui change d'un hébergement à l'autre (fait foi)
@@ -115,18 +115,18 @@ Codex : mêmes noms, en skills (`/odoo-new …`, `/odoo-close`, `/odoo-feedback`
 │   ├── implementation.md
 │   ├── qa-review.md
 │   ├── orchestration.md    ← /odoo-new
-│   ├── lot-close.md        ← /odoo-close
+│   ├── release-close.md        ← /odoo-close
 │   ├── retex.md            ← /odoo-feedback
 │   └── docs.md             ← skill camptocamp-docs
 ├── docs/                   ← livrables documentaires (charte, gabarits du changelog)
-│   └── templates/changelog/  suivi.md (lot ouvert), README.md (final), demande.md,
+│   └── templates/changelog/  suivi.md (release ouverte), README.md (final), demande.md,
 │                             tests_navigateur.md, communication_client.txt
 ├── stack/                  ← Odoo local pour la QA, une image par série
 ├── scripts/
 │   ├── odoo_briefing.py    briefing compact d'un projet — le premier réflexe
 │   ├── odoo_series.py      résolution de la série cible d'un module
 │   ├── odoo_project_scan.py écrit <projet>/.odoo-agents/PROJECT.md (relevé)
-│   ├── odoo-lot.sh         open / current / add / done / changed / modules / close
+│   ├── odoo-release.sh         open / current / add / done / changed / modules / close
 │   ├── odoo-lint.sh        ruff (config Odoo) + contrôles Odoo, --changed <ref>
 │   ├── odoo_lint.py        manifest, XML, sécurité, tests, motifs datés par série
 │   ├── odoo-test.sh        install + update + tests + tours + désinstall + logs, base par module
@@ -145,7 +145,7 @@ Fichiers **générés**, à ne pas éditer :
 
 ```
 ~/.claude/agents/odoo-*.md                 ~/.codex/skills/odoo-*/SKILL.md
-~/.claude/commands/odoo-{feature,lot-close,retex}.md
+~/.claude/commands/odoo-{feature,release-close,retex}.md
 ~/.claude/skills/camptocamp-docs/          ~/.codex/skills/camptocamp-docs/
 ~/.claude/CLAUDE.md   ~/.codex/AGENTS.md   (bloc délimité uniquement)
 ```
@@ -157,11 +157,11 @@ Créé par `scripts/odoo_project_scan.py`, à la racine du projet client :
 | Fichier | Contenu | Écrit par |
 |---|---|---|
 | `config` | `series = 18.0` — fait autorité sur la détection ; `lot_label = release` si le projet dit « release » | le scan, puis l'humain |
-| `PROJECT.md` | **relevé** régénérable (modules, modèles, dépendances, sécurité, tests, dette lint, zones chaudes git, lots) + **compréhension** écrite à la main (métier, décisions actées, pièges connus), jamais écrasée | le scan / les agents |
+| `PROJECT.md` | **relevé** régénérable (modules, modèles, dépendances, sécurité, tests, dette lint, zones chaudes git, releases) + **compréhension** écrite à la main (métier, décisions actées, pièges connus), jamais écrasée | le scan / les agents |
 | `JOURNAL.md` | une entrée par intervention, **quinze lignes au plus** : demande, fait, verdict, **Appris**, reste ouvert | le QA, la clôture |
 
 Le journal est la mémoire courte ; l'analyse détaillée vit dans le dossier du
-lot. Le briefing ne montre que les dernières entrées et extrait les « Appris »
+release. Le briefing ne montre que les dernières entrées et extrait les « Appris »
 des autres : un journal qui gonfle ne coûte plus de tokens, mais reste lisible
 par l'humain s'il tient ses quinze lignes.
 
@@ -178,16 +178,16 @@ python3 scripts/odoo_briefing.py ~/mon_projet
 python3 scripts/odoo_series.py /chemin/vers/mon_module
 scripts/odoo_project_scan.py ~/mon_projet
 
-# Lot
-scripts/odoo-lot.sh open ~/mon_projet "Contrats à facturer"
-scripts/odoo-lot.sh current ~/mon_projet
-scripts/odoo-lot.sh add <lot> "Filtre corrigé" "TestContractsToInvoice"
-scripts/odoo-lot.sh done <lot> 1 "vert"
-scripts/odoo-lot.sh modules <lot>
+# Release
+scripts/odoo-release.sh open ~/mon_projet "Contrats à facturer"
+scripts/odoo-release.sh current ~/mon_projet
+scripts/odoo-release.sh add <release> "Filtre corrigé" "TestContractsToInvoice"
+scripts/odoo-release.sh done <release> 1 "vert"
+scripts/odoo-release.sh modules <release>
 
-# Lint : tout, ou seulement ce qui a changé depuis l'ouverture du lot
+# Lint : tout, ou seulement ce qui a changé depuis l'ouverture de la release
 scripts/odoo-lint.sh /chemin/vers/mon_module
-scripts/odoo-lint.sh --changed "$(cat <lot>/.base)" /chemin/vers/mon_module
+scripts/odoo-lint.sh --changed "$(cat <release>/.base)" /chemin/vers/mon_module
 scripts/odoo-lint.sh --series 19.0 /chemin/vers/mon_module   # chiffrer une migration
 
 # Stack de test (une image par série)
@@ -198,8 +198,8 @@ scripts/odoo-stack.sh up              # http://localhost:8079  (admin/admin)
 # QA de tâche : tests ciblés (base odoo_qa_<série>_<module>, jamais partagée)
 scripts/odoo-test.sh mon_module --update --tags /mon_module:TestMaClasse
 
-# QA de lot : le protocole complet, en un tableau (recette.md dans le lot)
-scripts/odoo-recette.sh mon_module --lot <lot> --db client_test
+# QA de release : le protocole complet, en un tableau (recette.md dans la release)
+scripts/odoo-recette.sh mon_module --release <release> --db client_test
 
 # Sauvegarde client → base locale neutralisée, inventaire de ce qui vit en base
 scripts/odoo-restore.sh ~/Downloads/client-2026-08-19.zip --db client_test

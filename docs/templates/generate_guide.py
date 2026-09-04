@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gabarit de générateur de guide utilisateur Camptocamp — à copier à côté du guide à produire.
 
-Copier dans `<projet>/changelog/<lot>/generate_guide.py` (ou `<projet>/docs/scripts/`),
+Copier dans `<projet>/changelog/<release>/generate_guide.py` (ou `<projet>/docs/scripts/`),
 remplacer les textes, lancer :
 
     python3 generate_guide.py            → guide.docx + guide.pdf + relecture/<page>.png

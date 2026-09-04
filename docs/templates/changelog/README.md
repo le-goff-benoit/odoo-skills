@@ -1,6 +1,6 @@
-# <Résultat métier du lot, en une ligne>
+# <Résultat métier de la release, en une ligne>
 
-Lot du <jj mois aaaa> : <ce que l'utilisateur obtient de nouveau, en une ou deux phrases,
+Release du <jj mois aaaa> : <ce que l'utilisateur obtient de nouveau, en une ou deux phrases,
 sans vocabulaire technique>.
 
 ## Livraison
@@ -15,7 +15,7 @@ sans vocabulaire technique>.
 ## Arbitrage notable
 
 <Une décision qui n'allait pas de soi, expliquée avec l'alternative écartée et la raison.
-À supprimer si le lot n'en comporte aucune.>
+À supprimer si la release n'en comporte aucune.>
 
 ## Fichiers
 
@@ -33,7 +33,7 @@ sans vocabulaire technique>.
 | Installation base neuve | ✅ |
 | Mise à jour `-u` | ✅ |
 | Désinstallation | ✅ |
-| Tests Python du lot | ✅ N/N |
+| Tests Python de la release | ✅ N/N |
 | Tour navigateur (Chrome headless) | ✅ N/N étapes, `tour succeeded` |
 | Logs | ✅ 0 ERROR lié au module |
 
@@ -50,5 +50,5 @@ Ne jamais laisser cette section vide si quelque chose n'a pas été exécuté : 
 ## Reste à faire
 
 - <Action en attente, qui la porte, ce qui la déclenche (feu vert, déploiement…)>.
-- Déployer ce lot en <production / staging>, puis le signaler à <prénom du contact>
+- Déployer cette release en <production / staging>, puis le signaler à <prénom du contact>
   (voir [`communication_client.txt`](communication_client.txt)).

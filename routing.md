@@ -18,7 +18,7 @@ python3 ~/.odoo19-agents/scripts/odoo_briefing.py <module_ou_projet>
 
 Elle donne la série (de `.odoo-agents/config`, sinon du manifest) et tout ce
 que le projet sait déjà : `PROJECT.md` (relevé + compréhension métier,
-décisions actées, pièges connus), dernières entrées de `JOURNAL.md`, lot de
+décisions actées, pièges connus), dernières entrées de `JOURNAL.md`, release de
 changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 `~/.odoo19-agents/scripts/odoo_project_scan.py <racine>`.
 
@@ -27,9 +27,9 @@ changelog ouvert, leçons applicables. Si `.odoo-agents/` manque :
 | Nature de la demande | Réponse |
 |---|---|
 | **Fonctionnel pur** — comprendre, cadrer, challenger, chiffrer, « Odoo sait-il faire… », arbitrer une règle métier | `odoo-analyst` **seul**, aucun code |
-| **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-new`** : fonctionnel → dev → QA de tâche → journal, dans le lot ouvert (ouvert au besoin) |
-| **Clôture / livraison** — « ferme le lot », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
-| **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode lot) |
+| **Développement** — créer, modifier, corriger, étendre du code | **`/odoo-new`** : fonctionnel → dev → QA de tâche → journal, dans la release ouverte (ouverte au besoin) |
+| **Clôture / livraison** — « ferme la release », « prépare la livraison », « recette complète » | **`/odoo-close`** : recette entière, captures, guide, README, commit proposé |
+| **Validation seule** — « relis », « valide », « ce module est-il propre ? » | `odoo-tester` **seul** (mode release) |
 | **Documentation** — guide utilisateur ou de décision, communication client, sur demande explicite | skill **`camptocamp-docs`** (sinon, c'est `/odoo-close` qui la produit) |
 | **Remarque à retenir** — « pas comme ça », « chez ce client… » | **`/odoo-feedback "<remarque>"`** : journal du projet, leçon candidate |
 | **Amélioration du dispositif** — « qu'a-t-on appris », « le guide est-il à jour » | **`/odoo-feedback`** sans argument |
@@ -39,19 +39,19 @@ Règles :
 - La chaîne se déroule **sans redemander l'autorisation entre les étapes** ;
   elle ne s'arrête que si le standard couvre le besoin, sur question bloquante,
   ou QA rouge après deux reprises.
-- **Tâche légère, lot lourd** : pendant un lot ouvert, chaque tâche reçoit lint
+- **Tâche légère, release lourde** : pendant une release ouverte, chaque tâche reçoit lint
   des fichiers touchés, install/update et tests ciblés ; la recette complète
   se joue une fois, à la clôture. Une tâche qui touche aux droits, à la compta,
   à la facturation ou aux données existantes se valide tout de suite.
 - **Aucun livrable documentaire avant la clôture** : ni guide, ni capture, ni
-  communication pendant qu'un lot est ouvert, sauf demande explicite. Un écran
+  communication pendant qu'une release est ouverte, sauf demande explicite. Un écran
   qui change se note dans « Ce que l'utilisateur verra » et attend `/odoo-close`.
 - Une demande de dev triviale ne dispense pas de la revue fonctionnelle,
   expédiée en une ligne quand la demande est saine.
 - Une question purement technique (« où est défini X ») se répond directement,
   sans agent — dans la série du projet.
 - Toute intervention se termine par une entrée (≤ 15 lignes) dans le
-  `JOURNAL.md` du projet ; le détail vit dans le dossier du lot.
+  `JOURNAL.md` du projet ; le détail vit dans le dossier de la release.
 - Claude Code délègue aux sous-agents ; Codex applique les rôles
   (`~/.odoo19-agents/roles/*.md`) lui-même, en séquence. Résultat identique.
 - Hors Odoo, cet aiguillage ne s'applique pas.
@@ -71,6 +71,6 @@ la PRODUCTION de <client>. Je n'y ferai que de la lecture. Toute écriture vous
 sera demandée explicitement, opération par opération. »* ; lecture seule par
 défaut (`odoo_instance.py` refuse `create`/`write`/`unlink` en production) ;
 une écriture exige la confirmation humaine de **cette** opération, puis
-`--allow-write` et `ODOO_PRODUCTION_CONFIRMED=<nom>` ; jamais en lot ; aucun
+`--allow-write` et `ODOO_PRODUCTION_CONFIRMED=<nom>` ; jamais en masse ; aucun
 test, capture ni reprise en production ; aucun identifiant affiché, journalisé
 ou commité. Staging et test : écriture permise, annoncée, nettoyée derrière.

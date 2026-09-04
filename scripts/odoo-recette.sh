@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Recette complète d'un module à la clôture d'un lot : tout ce qui doit être
+# Recette complète d'un module à la clôture d'une release : tout ce qui doit être
 # vert avant de livrer, enchaîné en une commande, résumé en un tableau.
 #
 #   odoo-recette.sh <module> [options]
 #
 # Options :
-#   --lot <dossier>       dossier du lot : la référence git vient de son `.base`,
-#                         le résumé est écrit dans <lot>/recette.md
-#   --base <ref-git>      référence pour le lint --changed (défaut : .base du lot, sinon HEAD)
+#   --release <dossier>       dossier de la release : la référence git vient de son `.base`,
+#                         le résumé est écrit dans <release>/recette.md
+#   --base <ref-git>      référence pour le lint --changed (défaut : .base de la release, sinon HEAD)
 #   --db <copie_client>   base restaurée du client : mise à niveau -u dessus, logs contrôlés
 #   --no-uninstall        ne teste pas la désinstallation
 #   --no-fresh            garde la base de test existante (plus rapide, moins probant)
 #   --full-lint           linte tout le module, pas seulement les fichiers modifiés
 #
 # Protocole, dans l'ordre :
-#   1. lint (ruff config Odoo + contrôles Odoo), restreint aux fichiers du lot
+#   1. lint (ruff config Odoo + contrôles Odoo), restreint aux fichiers de la release
 #   2. base neuve : installation, mise à jour -u, suite de tests complète du
 #      module (tours inclus), désinstallation — via odoo-test.sh
 #   3. mise à niveau sur la copie du client si --db : c'est le contrôle qui voit
@@ -36,10 +36,10 @@ MODULE="${1:-}"
 if [ -z "$MODULE" ] || [[ "$MODULE" == --* ]]; then sed -n '2,28p' "$0" >&2; exit 2; fi
 shift
 
-LOT=""; BASE=""; CLIENT_DB=""; UNINSTALL=1; FRESH=1; FULL_LINT=0
+RELEASE=""; BASE=""; CLIENT_DB=""; UNINSTALL=1; FRESH=1; FULL_LINT=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --lot)          shift; LOT="$(cd "$1" && pwd)" ;;
+        --release)          shift; RELEASE="$(cd "$1" && pwd)" ;;
         --base)         shift; BASE="$1" ;;
         --db)           shift; CLIENT_DB="$1" ;;
         --no-uninstall) UNINSTALL=0 ;;
@@ -52,7 +52,7 @@ done
 
 # --- Où est le module ? ------------------------------------------------------
 ADDONS="${ODOO_ADDONS_DIR:-}"
-if [ -z "$ADDONS" ] && [ -n "$LOT" ]; then ADDONS="$(cd "$LOT/../.." && pwd)"; fi
+if [ -z "$ADDONS" ] && [ -n "$RELEASE" ]; then ADDONS="$(cd "$RELEASE/../.." && pwd)"; fi
 if [ -z "$ADDONS" ] || [ ! -f "$ADDONS/$MODULE/__manifest__.py" ]; then
     found="$(find "${ADDONS:-.}" -maxdepth 3 -path "*/$MODULE/__manifest__.py" 2>/dev/null | head -1)"
     [ -n "$found" ] || { echo "module $MODULE introuvable sous ${ADDONS:-.} : régler ODOO_ADDONS_DIR" >&2; exit 2; }
@@ -63,13 +63,13 @@ MODULE_DIR="$ADDONS/$MODULE"
 
 # shellcheck source=series-env.sh
 . "$HERE/series-env.sh"
-[ -n "$BASE" ] || { [ -n "$LOT" ] && [ -f "$LOT/.base" ] && BASE="$(cat "$LOT/.base")"; }
+[ -n "$BASE" ] || { [ -n "$RELEASE" ] && [ -f "$RELEASE/.base" ] && BASE="$(cat "$RELEASE/.base")"; }
 [ "$BASE" = "sans-git" ] && BASE=""
 
 STAMP="$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$STACK/artifacts"
-SUMMARY="${LOT:-$STACK/artifacts}/recette.md"
-[ -n "$LOT" ] || SUMMARY="$STACK/artifacts/recette-$MODULE-$STAMP.md"
+SUMMARY="${RELEASE:-$STACK/artifacts}/recette.md"
+[ -n "$RELEASE" ] || SUMMARY="$STACK/artifacts/recette-$MODULE-$STAMP.md"
 
 declare -a ROWS=()
 row() { ROWS+=("| $1 | $2 | $3 |"); }
@@ -86,7 +86,7 @@ fi
 
 echo "Recette de $MODULE — série $ODOO_SERIES — version $BASE_VERSION → $VERSION"
 [ -n "$BASE" ] && echo "Référence git : $BASE"
-[ -n "$LOT" ] && echo "Lot : $LOT"
+[ -n "$RELEASE" ] && echo "Release : $RELEASE"
 
 # --- 1. Lint -----------------------------------------------------------------
 step "1. Lint"
@@ -96,7 +96,7 @@ if [ "$FULL_LINT" -eq 1 ] || [ -z "$BASE" ]; then
     scope="module entier"
 else
     "$HERE/odoo-lint.sh" --changed "$BASE" "$MODULE_DIR" 2>&1 | tee "$LINT_LOG"; rc=${PIPESTATUS[0]}
-    scope="fichiers du lot (--changed ${BASE:0:10})"
+    scope="fichiers de la release (--changed ${BASE:0:10})"
 fi
 LINT_LINE="$(grep -E "^[0-9]+ erreur" "$LINT_LOG" | tail -1)"
 case "$rc" in
@@ -173,7 +173,7 @@ fi
 step "4. Résumé"
 VERSION_NOTE=""
 if [ "$BASE_VERSION" != "?" ] && [ "$BASE_VERSION" = "$VERSION" ] && [ -n "$(git -C "$ADDONS" diff --name-only "$BASE" -- "$MODULE_DIR" 2>/dev/null | grep -vE '^\s*$' | grep -v '/tests/' | head -1)" ]; then
-    VERSION_NOTE="⚠️ la version du manifest n'a pas bougé depuis l'ouverture du lot ($VERSION) alors que du code a changé"
+    VERSION_NOTE="⚠️ la version du manifest n'a pas bougé depuis l'ouverture de la release ($VERSION) alors que du code a changé"
 fi
 {
     echo "# Recette — \`$MODULE\` — $(date '+%d.%m.%Y %H:%M')"

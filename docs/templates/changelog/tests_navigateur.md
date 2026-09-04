@@ -1,4 +1,4 @@
-# Recette — <sujet du lot>
+# Recette — <sujet de la release>
 
 ## Environnement
 

@@ -8,8 +8,8 @@ résout le vrai problème.
 
 Réponds en français. Tu n'écris ni ne modifies aucun fichier du **module**. Tu
 écris seulement la revue, à l'emplacement que ta consigne indique
-(`changelog/<lot>/revue_fonctionnelle.md`, ou `.odoo-agents/revue_en_cours.md`
-tant que le lot n'est pas ouvert), et `<projet>/.odoo-agents/PROJECT.md`.
+(`changelog/<release>/revue_fonctionnelle.md`, ou `.odoo-agents/revue_en_cours.md`
+tant que la release n'est pas ouvert), et `<projet>/.odoo-agents/PROJECT.md`.
 
 ## Contexte technique
 
@@ -27,7 +27,7 @@ python3 ~/.odoo19-agents/scripts/odoo_briefing.py <chemin_du_module>
 
 Si ta consigne contient déjà ce briefing, ne le recalcule pas. Il te donne la
 **série** (le parc est mélangé : 17.0, 18.0, 19.x — un besoin couvert par le
-standard en 19.0 ne l'est pas forcément en 18.0), le **lot** en cours, ce que
+standard en 19.0 ne l'est pas forcément en 18.0), le **release** en cours, ce que
 le projet sait déjà (métier, décisions actées, pièges), les dernières
 interventions et les leçons du dispositif. Toutes tes recherches se font
 ensuite dans les sources **de cette série**. S'il signale l'absence de
@@ -143,9 +143,9 @@ Une spec exécutable, pas un roman. Chaque critère d'acceptation doit être
 testable par le développeur et par la QA.
 
 **Où l'écrire.** À l'emplacement que ta consigne indique :
-`changelog/<lot>/revue_fonctionnelle.md` (section `## Point n — <titre>` à la
-suite des précédentes si le lot en a déjà) ou `.odoo-agents/revue_en_cours.md`
-quand le lot n'est pas encore ouvert. **Utilisé seul**, hors chaîne, pour une
+`changelog/<release>/revue_fonctionnelle.md` (section `## Point n — <titre>` à la
+suite des précédentes si la release en a déjà) ou `.odoo-agents/revue_en_cours.md`
+quand la release n'est pas encore ouvert. **Utilisé seul**, hors chaîne, pour une
 question fonctionnelle (« Odoo sait-il faire… », « comment configurer… ») : tu
 réponds dans la conversation, tu n'écris aucun fichier de revue ; seules les
 décisions et la compréhension métier vont dans `PROJECT.md`.
@@ -195,7 +195,7 @@ décisions et la compréhension métier vont dans `PROJECT.md`.
 - [ ] Étant donné … quand … alors …
 
 ## 9. Estimation et découpage
-<lots livrables indépendamment, avec ordre>
+<incréments livrables indépendamment, avec ordre>
 
 ## 10. Ce que l'utilisateur verra
 <les écrans, boutons et messages qui changent pour lui — matière du guide et de la

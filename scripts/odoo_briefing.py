@@ -6,7 +6,7 @@ SERIES_MATRIX.md — 60 Ko et plus sur un projet vivant) par un seul relevé de
 quelques Ko qui contient tout ce qu'un agent doit savoir avant d'agir :
 
   - la série cible et son origine, les sources de référence ;
-  - le lot de changelog ouvert (s'il y en a un) et ses points ;
+  - la release de changelog ouvert (s'il y en a un) et ses points ;
   - les sections écrites à la main de PROJECT.md (métier, décisions, pièges) ;
   - le relevé (une ligne par module) ;
   - les N dernières entrées du journal (défaut 3) et toutes les lignes « Appris » ;
@@ -148,28 +148,28 @@ def lessons(series: str) -> list[str]:
 
 
 def lot_label(root: Path) -> str:
-    """Le mot du projet pour un lot de changelog (« release » chez NECA), « lot » par défaut."""
+    """Le mot du projet pour une release de changelog (« release » chez NECA), « release » par défaut."""
     config = root / ".odoo-agents" / "config"
     if config.is_file():
         for line in config.read_text(encoding="utf-8", errors="replace").splitlines():
             found = re.match(r"\s*lot_label\s*[=:]\s*(\S+)", line)
             if found:
                 return found[1]
-    return "lot"
+    return "release"
 
 
 def lot_status(root: Path) -> str:
-    lot_script = HOME / "scripts" / "odoo-lot.sh"
+    lot_script = HOME / "scripts" / "odoo-release.sh"
     if not lot_script.is_file():
         return ""
     current = run([str(lot_script), "current", str(root)])
     if not current:
         return (f"aucun(e) {lot_label(root)} ouvert(e) — s'ouvre après le verdict de l'analyste "
-                "(`odoo-lot.sh open <projet> \"<titre>\"`)")
-    lot = Path(current)
-    points = run([str(lot_script), "points", str(lot)])
-    base = (lot / ".base").read_text().strip() if (lot / ".base").is_file() else "?"
-    lines = [f"`{lot.relative_to(root)}` (base git `{base[:10]}`)"]
+                "(`odoo-release.sh open <projet> \"<titre>\"`)")
+    release = Path(current)
+    points = run([str(lot_script), "points", str(release)])
+    base = (release / ".base").read_text().strip() if (release / ".base").is_file() else "?"
+    lines = [f"`{release.relative_to(root)}` (base git `{base[:10]}`)"]
     if points:
         lines += ["  " + p for p in points.splitlines()]
     return "\n".join(lines)

@@ -696,7 +696,7 @@ manipule `hr.contract` doit être repensé sur `hr.version`.
 
 ---
 
-## 10. Commits, versions et lots
+## 10. Commits, versions et releases
 
 Un commit Odoo se lit sans ouvrir le diff. Convention d'Odoo S.A.
 (`git log --oneline -300` sur `~/odoo-sources/19.0` : 299 messages sur 300) :
@@ -705,7 +705,7 @@ Un commit Odoo se lit sans ouvrir le diff. Convention d'Odoo S.A.
 [TAG] module: sujet à l'impératif, sans point final
 
 Corps : le pourquoi, ce que l'utilisateur observait, ce qui change. Référence
-au ticket ou au lot (`changelog/2026-09-04_01_…`).
+au ticket ou à la release (`changelog/2026-09-04_01_…`).
 ```
 
 | Tag | Quand |
@@ -721,11 +721,11 @@ au ticket ou au lot (`changelog/2026-09-04_01_…`).
 | `[PERF]` | performance |
 | `[CLA]` | accord de contribution |
 
-Plusieurs modules : `[FIX] sale, stock: …`. Un commit par lot est la norme de
-livraison ; le corps liste les points livrés, dans les mots du README du lot.
+Plusieurs modules : `[FIX] sale, stock: …`. Un commit par release est la norme de
+livraison ; le corps liste les points livrés, dans les mots du README de la release.
 
 **Version du manifest** : `<série>.<majeure>.<mineure>.<correctif>`, incrémentée
-**une fois par lot, à la clôture**, sur la composante convenue avec le projet,
+**une fois par release, à la clôture**, sur la composante convenue avec le projet,
 lue dans le fichier — jamais mémorisée. Tout champ stocké ajouté rend
 l'incrément obligatoire : Odoo.sh déploie le code sans mettre le module à jour
 si `version` n'a pas bougé, la colonne n'est jamais créée, et l'écran casse en
@@ -733,11 +733,11 @@ production sur `column … does not exist`. Une modification purement
 documentaire ne change pas la version. La version livrée est celle qui a été
 testée : incrémenter après la recette impose de la rejouer.
 
-**Lot de changelog** (`changelog/AAAA-MM-JJ_NN_titre/`) : `demande.md` (les
+**Release de changelog** (`changelog/AAAA-MM-JJ_NN_titre/`) : `demande.md` (les
 demandes telles quelles), `revue_fonctionnelle.md`, `qa.md`, `recette.md`,
-`tests_navigateur.md`, `README.md` (suivi vivant tant que le lot est ouvert,
+`tests_navigateur.md`, `README.md` (suivi vivant tant que la release est ouverte,
 forme finale à la clôture), `captures/`, guide et communication quand un écran
-change. Outillage : `scripts/odoo-lot.sh`, `/odoo-new`, `/odoo-close`.
+change. Outillage : `scripts/odoo-release.sh`, `/odoo-new`, `/odoo-close`.
 
 ---
 

@@ -17,13 +17,13 @@ sur le projet).
    ```
    Si ta consigne contient déjà ce briefing, ne le recalcule pas. Il donne la
    **série** (le parc est mélangé : écrire du 19.0 dans un module 18.0 le casse
-   à l'installation), les **formes attendues dans cette série**, le lot en
+   à l'installation), les **formes attendues dans cette série**, la release en
    cours, les pièges connus du projet et les leçons du dispositif. Tout ce qui
    suit — sources de référence, formes autorisées, lint, stack — se cale sur
    cette série. S'il signale l'absence de `.odoo-agents/` :
    `~/.odoo19-agents/scripts/odoo_project_scan.py <racine_du_projet>`.
 
-1. **Lis la spec.** `changelog/<lot>/revue_fonctionnelle.md` est ton
+1. **Lis la spec.** `changelog/<release>/revue_fonctionnelle.md` est ton
    périmètre — ni plus, ni moins. Si elle n'existe pas (demande directe, hors
    chaîne), la demande de l'utilisateur en tient lieu ; note-le.
 
@@ -145,14 +145,14 @@ Tu ne considères pas une fonctionnalité livrée sans test. Minimum :
 3. **Lint des fichiers touchés**, avant de rendre. Le script annonce la série
    qu'il applique : vérifie que c'est bien celle du module.
    ```bash
-   ~/.odoo19-agents/scripts/odoo-lint.sh --changed "$(cat changelog/<lot>/.base)" <chemin_du_module>
+   ~/.odoo19-agents/scripts/odoo-lint.sh --changed "$(cat changelog/<release>/.base)" <chemin_du_module>
    # Module neuf : tout doit être propre.
    ~/.odoo19-agents/scripts/odoo-lint.sh <chemin_du_module>
    ```
    Tu ne reprends pas la dette antérieure du module : tu la signales, tu ne la
    corriges pas sans qu'on te le demande.
 4. **Tests ciblés** sur le stack de la série — pas la suite complète, elle se
-   joue à la clôture du lot :
+   joue à la clôture de la release :
    ```bash
    export ODOO_ADDONS_DIR=<répertoire contenant le module>
    ~/.odoo19-agents/scripts/odoo-test.sh <module> --update --tags /<module>:<TestClasse>
@@ -163,19 +163,19 @@ Tu ne considères pas une fonctionnalité livrée sans test. Minimum :
    ```bash
    ~/.odoo19-agents/scripts/odoo-restore.sh <sauvegarde.zip> --db <client>_test --update <module>
    ```
-5. **Version du manifest** : elle s'incrémente **une fois par lot, à la
+5. **Version du manifest** : elle s'incrémente **une fois par release, à la
    clôture**, sur la composante convenue avec le projet, lue dans le fichier —
    jamais mémorisée. Tout champ stocké ajouté rend l'incrément obligatoire
-   (Odoo.sh ne met pas le module à jour sinon). Si tu es hors lot ou que la
+   (Odoo.sh ne met pas le module à jour sinon). Si tu es hors release ou que la
    tâche part seule en production, incrémente maintenant.
-6. **Suivi du lot** : ajoute une note datée dans « Notes de travail » du
-   `README.md` du lot pour tout arbitrage ou piste écartée en cours de route.
+6. **Suivi de la release** : ajoute une note datée dans « Notes de travail » du
+   `README.md` de la release pour tout arbitrage ou piste écartée en cours de route.
 7. Rends un compte-rendu court : série visée, fichiers créés/modifiés, ce qui
    est couvert par les tests, ce qui ne l'est pas, points en suspens, et le
    **message de commit proposé** (`[TAG] module: sujet` — voir le guide § 10).
    Tu ne commites pas sans qu'on te le demande.
 8. Tu ne produis aucun guide, aucune capture de documentation, aucune
-   communication client : c'est la clôture du lot (`/odoo-close`) qui s'en
+   communication client : c'est la clôture de la release (`/odoo-close`) qui s'en
    charge. Une capture sert seulement à prouver un rendu dans `qa.md`.
 9. Si tu as découvert quelque chose que la prochaine intervention devra savoir
    — contrainte métier non écrite, contournement en place, dépendance cachée —

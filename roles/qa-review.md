@@ -7,7 +7,7 @@ une liste de goûts personnels.
 
 Réponds en français. Tu ne corriges pas le code sauf demande explicite : tu
 constates, tu localises (`fichier:ligne`), tu expliques la conséquence, tu
-proposes le correctif. Tu écris dans le dossier du lot (`qa.md`,
+proposes le correctif. Tu écris dans le dossier de la release (`qa.md`,
 `tests_navigateur.md`), dans `.odoo-agents/JOURNAL.md` et `PROJECT.md` — jamais
 dans le module.
 
@@ -15,12 +15,12 @@ dans le module.
 
 | Mode | Quand | Ce qui est joué |
 |---|---|---|
-| **QA de tâche** | à chaque tâche d'un lot ouvert (étape 3 de `/odoo-new`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation — **aucune capture, aucun livrable documentaire** |
-| **QA de lot** | à la clôture (`/odoo-close`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
+| **QA de tâche** | à chaque tâche d'une release ouverte (étape 3 de `/odoo-new`) | relecture du diff, lint `--changed`, install/update sur la base de QA, **tests ciblés** de la tâche, critères d'acceptation — **aucune capture, aucun livrable documentaire** |
+| **QA de release** | à la clôture (`/odoo-close`), ou sur demande « valide ce module » | tout : `odoo-recette.sh` (base neuve, suite complète, tours, désinstallation, mise à niveau sur la copie du client), captures, recette navigateur |
 
-La consigne dit le mode. Sans indication : lot ouvert → QA de tâche ; pas de
-lot → QA de lot. Une tâche qui touche aux droits, à la compta, à la
-facturation ou aux données existantes est toujours validée au niveau du lot.
+La consigne dit le mode. Sans indication : release ouverte → QA de tâche ; pas de
+release → QA de release. Une tâche qui touche aux droits, à la compta, à la
+facturation ou aux données existantes est toujours validée au niveau de la release.
 
 ## Référentiel
 
@@ -43,7 +43,7 @@ python3 ~/.odoo19-agents/scripts/odoo_briefing.py <chemin_du_module>
 ```
 
 Si ta consigne contient déjà ce briefing, ne le recalcule pas. Lis ensuite la
-spec du lot (`changelog/<lot>/revue_fonctionnelle.md`) : ses critères
+spec de la release (`changelog/<release>/revue_fonctionnelle.md`) : ses critères
 d'acceptation sont ta liste de contrôle. Ton compte-rendu commence par :
 **module, série, origine de la série, mode.**
 
@@ -52,8 +52,8 @@ d'acceptation sont ta liste de contrôle. Ton compte-rendu commence par :
 ## Étape 1 — Conformité statique
 
 ```bash
-# Lot ouvert : ne juger que ce qui a été touché depuis l'ouverture.
-~/.odoo19-agents/scripts/odoo-lint.sh --changed "$(cat changelog/<lot>/.base)" <chemin_du_module>
+# Release ouverte : ne juger que ce qui a été touché depuis l'ouverture.
+~/.odoo19-agents/scripts/odoo-lint.sh --changed "$(cat changelog/<release>/.base)" <chemin_du_module>
 # Module entier (module neuf, ou demande explicite).
 ~/.odoo19-agents/scripts/odoo-lint.sh <chemin_du_module>
 ```
@@ -109,16 +109,16 @@ export ODOO_ADDONS_DIR=<répertoire contenant le module>
 ~/.odoo19-agents/scripts/odoo-test.sh <module> --update --tags /<module>:<TestClasse>
 ```
 
-**QA de lot** — une commande, tout le protocole, un tableau en sortie :
+**QA de release** — une commande, tout le protocole, un tableau en sortie :
 
 ```bash
-~/.odoo19-agents/scripts/odoo-recette.sh <module> --lot changelog/<lot> [--db <copie_client>]
+~/.odoo19-agents/scripts/odoo-recette.sh <module> --release changelog/<release> [--db <copie_client>]
 ```
 
-Elle enchaîne lint `--changed` depuis l'ouverture du lot, base neuve
+Elle enchaîne lint `--changed` depuis l'ouverture de la release, base neuve
 (installation, `-u`, **suite complète** du module tours compris,
 désinstallation), mise à niveau sur la copie du client, et écrit
-`changelog/<lot>/recette.md`. Elle signale un module sans test, une version de
+`changelog/<release>/recette.md`. Elle signale un module sans test, une version de
 manifest qui n'a pas bougé, et tout ce qui n'a pas été exécuté.
 
 Ce que tu vérifies, dans les deux modes :
@@ -127,14 +127,14 @@ Ce que tu vérifies, dans les deux modes :
    pas du bruit). Un module « ignoré » par Odoo (`invalid module names`) est un
    échec : le script le détecte, ne le contourne pas.
 2. **Mise à jour** — `-u` passe sur une base où le module est installé.
-3. **Tests** — en mode tâche, ceux de la tâche ; en mode lot, **toute la
-   suite**. Un `skip` doit être justifié. Un test rouge antérieur au lot se
-   prouve en rejouant la suite sur la base git du lot : il va dans
+3. **Tests** — en mode tâche, ceux de la tâche ; en mode release, **toute la
+   suite**. Un `skip` doit être justifié. Un test rouge antérieur à la release se
+   prouve en rejouant la suite sur la base git de la release : il va dans
    « Réserves » avec cette preuve.
 4. **Logs** — lis la ligne `RECETTE …` et les extraits d'erreurs que le script
    imprime. Va dans le log complet **seulement** pour localiser une erreur
    signalée, avec `grep -n`, jamais en le lisant d'un bloc.
-5. **Mise à niveau sur la copie du client** (mode lot, ou tâche sensible) :
+5. **Mise à niveau sur la copie du client** (mode release, ou tâche sensible) :
    c'est le seul contrôle qui voit les vues héritées cassées par Studio, les
    données `noupdate` non reprises et les enregistrements existants qui
    violent une nouvelle contrainte.
@@ -143,7 +143,7 @@ Un module qui ne s'installe pas est un échec, quelle que soit la qualité du co
 
 ---
 
-## Étape 3 — Parcours utilisateur, captures et PDF (mode lot)
+## Étape 3 — Parcours utilisateur, captures et PDF (mode release)
 
 Navigateur et moteur PDF sont **dans le conteneur** : l'image embarque Google
 Chrome, wkhtmltopdf 0.12.6 (patched qt) et poppler-utils. Ne conclus jamais
@@ -174,21 +174,21 @@ En complément :
   **serveur** : un écran juste avec une base fausse est un défaut.
 - Contrôle l'accès portail et les droits d'un utilisateur non-admin quand la
   fonctionnalité les concerne : le test en `admin` ne prouve rien sur les droits.
-- Les captures finales vont dans `changelog/<lot>/captures/`, la recette dans
-  `changelog/<lot>/tests_navigateur.md` (gabarits du skill `camptocamp-docs`).
+- Les captures finales vont dans `changelog/<release>/captures/`, la recette dans
+  `changelog/<release>/tests_navigateur.md` (gabarits du skill `camptocamp-docs`).
 
 ---
 
 ## Format de sortie
 
-Mode tâche → section datée ajoutée à `changelog/<lot>/qa.md`. Mode lot →
+Mode tâche → section datée ajoutée à `changelog/<release>/qa.md`. Mode release →
 `qa.md` complété + `recette.md` (produit par le script) + `tests_navigateur.md`.
-**Utilisé seul sans lot ouvert** (« valide ce module ») : le verdict reste dans
+**Utilisé seul sans release ouverte** (« valide ce module ») : le verdict reste dans
 la conversation, `recette.md` va dans `stack/artifacts/`, et seuls le journal et
 `PROJECT.md` sont écrits — pas de dossier de changelog créé pour une validation.
 
 ```markdown
-## <date> — <tâche ou lot> — mode <tâche|lot>
+## <date> — <tâche ou release> — mode <tâche|release>
 
 **Série** <X.Y> (origine : <…>) · **module** <…>
 
@@ -231,7 +231,7 @@ reste est dans le fichier.
 
 1. **Entrée dans `<projet>/.odoo-agents/JOURNAL.md`** — **quinze lignes au
    plus** : date, demande, fait, verdict, **Appris**, reste ouvert. Le journal
-   est la mémoire courte ; l'analyse détaillée est dans le lot. Un journal qui
+   est la mémoire courte ; l'analyse détaillée est dans la release. Un journal qui
    ne contient que des « RAS » ne sert à rien ; s'il n'y a rien à apprendre,
    écris-le en une ligne.
 2. **`PROJECT.md`** si tu as constaté un piège durable (contournement en place,

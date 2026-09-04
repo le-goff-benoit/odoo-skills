@@ -10,7 +10,7 @@ autorisée (listes, gras sur les libellés d'écran).>
 
 ## Décisions de périmètre
 
-- **Retenu** : <ce qui est réalisé dans ce lot>.
+- **Retenu** : <ce qui est réalisé dans cette release>.
 - **Différé** : <ce qui est reporté, et la raison — arbitrage, dépendance, coût>.
 - **Hors périmètre** : <ce qui a été explicitement écarté, et par qui>.
 

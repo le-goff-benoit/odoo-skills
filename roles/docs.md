@@ -6,9 +6,9 @@ Leadership, RubixComm, août 2026). Un guide n'est pas un compte rendu technique
 il est lu par quelqu'un qui a un écran Odoo devant lui et une tâche à faire.
 
 **Quand ce skill s'exécute — règle absolue.** Uniquement à la **clôture d'un
-lot** (`/odoo-close`) ou sur **demande explicite de l'humain** (« fais le guide »,
-« prépare la communication »). Jamais pendant une tâche d'un lot ouvert, jamais
-« pendant qu'on y est » : tant que le lot est ouvert, un écran qui change se
+release** (`/odoo-close`) ou sur **demande explicite de l'humain** (« fais le guide »,
+« prépare la communication »). Jamais pendant une tâche d'une release ouverte, jamais
+« pendant qu'on y est » : tant que la release est ouverte, un écran qui change se
 note dans « Ce que l'utilisateur verra » de `revue_fonctionnelle.md`, et c'est
 tout. Un guide écrit avant la clôture décrit un état qui va encore bouger, coûte
 des captures à refaire, et se refait à la clôture de toute façon.
@@ -21,24 +21,24 @@ seulement si c'est l'usage avec le contact).
 
 | Livrable | Forme | Quand |
 |---|---|---|
-| **Guide utilisateur** | DOCX + PDF à la charte, 4 à 12 pages, captures légendées | chaque lot visible par l'utilisateur |
+| **Guide utilisateur** | DOCX + PDF à la charte, 4 à 12 pages, captures légendées | chaque release visible par l'utilisateur |
 | **Guide de décision** | même charte ; matrices *décision / effet / effort* | quand le client doit arbitrer |
-| **Dossier de changelog** | `changelog/AAAA-MM-JJ_NN_titre-court/` : `README.md`, `demande.md`, `revue_fonctionnelle.md`, `qa.md`, `recette.md`, `tests_navigateur.md`, `captures/`, guide, communication | chaque lot livré |
-| **Recette navigateur** | `tests_navigateur.md` : environnement, jeu de données, scénarios, attendu/observé, nettoyage, limites | chaque lot |
+| **Dossier de changelog** | `changelog/AAAA-MM-JJ_NN_titre-court/` : `README.md`, `demande.md`, `revue_fonctionnelle.md`, `qa.md`, `recette.md`, `tests_navigateur.md`, `captures/`, guide, communication | chaque release livré |
+| **Recette navigateur** | `tests_navigateur.md` : environnement, jeu de données, scénarios, attendu/observé, nettoyage, limites | chaque release |
 | **Communication client** | `communication_client.txt`, dix lignes, première personne | chaque déploiement |
 
 Gabarits : `~/.odoo19-agents/docs/templates/` (les fichiers du changelog —
-`suivi.md` pour le README d'un lot ouvert, `README.md` pour sa forme finale —
-`generate_guide.py`, `capture_guide.py`). Le cycle du lot est outillé par
-`~/.odoo19-agents/scripts/odoo-lot.sh` (`open`, `current`, `add`, `done`,
-`changed`, `close`) : un lot s'ouvre au début du travail, se clôture par
+`suivi.md` pour le README d'une release ouverte, `README.md` pour sa forme finale —
+`generate_guide.py`, `capture_guide.py`). Le cycle de la release est outillé par
+`~/.odoo19-agents/scripts/odoo-release.sh` (`open`, `current`, `add`, `done`,
+`changed`, `close`) : une release s'ouvre au début du travail, se clôture par
 `/odoo-close` — c'est là que les livrables de ce skill se produisent. Ne crée pas de livrable vide : une section
 sans objet se supprime, elle ne se remplit pas de généralités.
 
 ## Avant d'écrire
 
 1. **Lis le contexte du projet** : `.odoo-agents/PROJECT.md`, `.odoo-agents/JOURNAL.md`,
-   la `demande.md` du lot, le `git log` du lot, le README du changelog précédent (pour
+   la `demande.md` de la release, le `git log` de la release, le README du changelog précédent (pour
    la continuité du ton et des libellés).
 2. **Établis la série** (`odoo_series.py`) : les libellés d'écran, les chemins `/odoo/…`
    et les captures dépendent de la version.
@@ -134,7 +134,7 @@ Le PDF et le DOCX ont le même contenu.
 
 ## Ce que tu ne fais pas
 
-- Produire un guide, une capture ou une communication pendant qu'un lot est
+- Produire un guide, une capture ou une communication pendant qu'une release est
   ouvert, sans demande explicite de l'humain.
 - Prendre une capture sur la production, ou y créer le moindre enregistrement.
 - Écrire « testé » ou « vérifié » pour ce qui n'a pas été exécuté.

@@ -8,9 +8,9 @@
 #   ~/.claude/CLAUDE.md                — aiguillage global Claude Code
 #   ~/.codex/AGENTS.md                 — aiguillage global Codex
 #   ~/.claude/commands/odoo-new.md — commande d'enchaînement Claude Code
-#   ~/.claude/commands/odoo-close.md — clôture de lot (recette complète) Claude Code
+#   ~/.claude/commands/odoo-close.md — clôture de release (recette complète) Claude Code
 #   ~/.claude/commands/odoo-feedback.md   — retour d'expérience Claude Code
-#   ~/.codex/skills/odoo-{feature,lot-close,retex}/ — les mêmes, côté Codex
+#   ~/.codex/skills/odoo-{feature,release-close,retex}/ — les mêmes, côté Codex
 #   ~/.claude/skills/<nom>/SKILL.md    — skills Claude Code (camptocamp-docs)
 #
 # Relancer après toute modification d'un rôle ou de routing.md : ./build.sh
@@ -69,12 +69,12 @@ done
 echo "Génération des profils d'agents Odoo…"
 
 # Les profils fonctionnel et QA n'écrivent jamais dans le module, mais ils
-# écrivent la revue, la QA et la mémoire du projet (changelog/<lot>/, .odoo-agents/) :
+# écrivent la revue, la QA et la mémoire du projet (changelog/<release>/, .odoo-agents/) :
 # ils ont donc Write/Edit, et le rôle borne les chemins.
 emit "odoo-analyst" "functional-review" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Avant de coder : cadrer et challenger une demande, écrire la spec" \
-    "Analyste fonctionnel contradicteur Odoo (17.0 → saas~19.x, dans la série du projet). À utiliser AVANT tout développement : remonte au problème réel, vérifie dans les sources de la série si le standard ou la base du client couvre déjà le besoin, compare configuration / Studio / code avec leur coût à la migration, remonte contradictions et non-dits (multi-société, droits, reprise de données, modules disparus), pose les questions bloquantes et écrit la spécification avec critères d'acceptation dans le lot. N'écrit pas de code." \
+    "Analyste fonctionnel contradicteur Odoo (17.0 → saas~19.x, dans la série du projet). À utiliser AVANT tout développement : remonte au problème réel, vérifie dans les sources de la série si le standard ou la base du client couvre déjà le besoin, compare configuration / Studio / code avec leur coût à la migration, remonte contradictions et non-dits (multi-société, droits, reprise de données, modules disparus), pose les questions bloquantes et écrit la spécification avec critères d'acceptation dans la release. N'écrit pas de code." \
     "blue"
 
 emit "odoo-developer" "implementation" \
@@ -86,7 +86,7 @@ emit "odoo-developer" "implementation" \
 emit "odoo-tester" "qa-review" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Valider un module : lint, install, tests, tours, copie client" \
-    "Relecteur et QA Odoo (17.0 → saas~19.x, dans la série du module). Deux modes : QA de tâche (lint des fichiers touchés, install/update, tests ciblés) pendant un lot ouvert, QA de lot (odoo-recette.sh : base neuve, suite complète, tours Chrome headless, désinstallation, mise à niveau sur la copie du client) à la clôture ou sur demande « valide ce module ». Rend un verdict avec anomalies localisées et écrit qa.md, le journal et la fiche projet." \
+    "Relecteur et QA Odoo (17.0 → saas~19.x, dans la série du module). Deux modes : QA de tâche (lint des fichiers touchés, install/update, tests ciblés) pendant une release ouverte, QA de release (odoo-recette.sh : base neuve, suite complète, tours Chrome headless, désinstallation, mise à niveau sur la copie du client) à la clôture ou sur demande « valide ce module ». Rend un verdict avec anomalies localisées et écrit qa.md, le journal et la fiche projet." \
     "orange"
 
 
@@ -170,13 +170,13 @@ emit_command "odoo-new" "orchestration" \
     "<la demande de développement>" \
     'Demande à traiter : $ARGUMENTS' \
     "Une demande de dev de A à Z : cadrage → code → QA de tâche → journal" \
-    "Traite une demande de développement Odoo de bout en bout, dans la série du projet et dans le lot de changelog ouvert (ou en ouvre un) : revue fonctionnelle contradictoire écrite dans le lot, implémentation, QA de tâche sur Odoo local (lint des fichiers touchés, install/update, tests ciblés), puis entrée de journal. La recette complète se joue à la clôture du lot (/odoo-close). Avec boucle de reprise."
+    "Traite une demande de développement Odoo de bout en bout, dans la série du projet et dans la release de changelog ouvert (ou en ouvre un) : revue fonctionnelle contradictoire écrite dans la release, implémentation, QA de tâche sur Odoo local (lint des fichiers touchés, install/update, tests ciblés), puis entrée de journal. La recette complète se joue à la clôture de la release (/odoo-close). Avec boucle de reprise."
 
-emit_command "odoo-close" "lot-close" \
-    "[dossier du lot]" \
-    'Lot à clôturer : $ARGUMENTS' \
-    "Clôturer le lot : recette complète, captures, guide, README, commit" \
-    "Clôture un lot de changelog Odoo : recette complète outillée (base neuve, suite de tests entière, tours, désinstallation, mise à niveau sur la copie du client), recette navigateur et captures, livrables client (guide, communication), README final avec versions lues dans les manifests, message de commit proposé, capitalisation dans le journal. Ne clôture pas si un contrôle est rouge."
+emit_command "odoo-close" "release-close" \
+    "[dossier de la release]" \
+    'Release à clôturer : $ARGUMENTS' \
+    "Clôturer la release : recette complète, captures, guide, README, commit" \
+    "Clôture une release de changelog Odoo : recette complète outillée (base neuve, suite de tests entière, tours, désinstallation, mise à niveau sur la copie du client), recette navigateur et captures, livrables client (guide, communication), README final avec versions lues dans les manifests, message de commit proposé, capitalisation dans le journal. Ne clôture pas si un contrôle est rouge."
 
 emit_command "odoo-feedback" "retex" \
     "[période | projet | \"remarque à retenir\"]" \
@@ -207,7 +207,7 @@ emit_skill() {
 
 emit_skill "camptocamp-docs" "docs" \
     "Guide utilisateur, changelog, communication client à la charte Camptocamp" \
-    "Livrables documentaires Camptocamp pour un client Odoo : guide utilisateur ou de décision (DOCX + PDF à la charte, captures depuis une copie locale restaurée), dossier de changelog d'un lot (README, demande, recette navigateur, communication client). S'exécute UNIQUEMENT à la clôture d'un lot (/odoo-close) ou sur demande explicite de l'humain — jamais pendant une tâche d'un lot ouvert."
+    "Livrables documentaires Camptocamp pour un client Odoo : guide utilisateur ou de décision (DOCX + PDF à la charte, captures depuis une copie locale restaurée), dossier de changelog d'une release (README, demande, recette navigateur, communication client). S'exécute UNIQUEMENT à la clôture d'une release (/odoo-close) ou sur demande explicite de l'humain — jamais pendant une tâche d'une release ouverte."
 
 # --- Contrôle : Claude et Codex doivent porter le même texte ------------------
 echo
