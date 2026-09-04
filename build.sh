@@ -61,7 +61,7 @@ emit() {
 
 # Anciens noms (avant le 2026-09-04) : on retire les fichiers générés pour qu'ils
 # ne traînent pas dans les sélecteurs à côté des nouveaux.
-for old in odoo-functional-reviewer odoo-developer odoo-qa-reviewer odoo-feature odoo-lot-close; do
+for old in odoo-functional-reviewer odoo-qa-reviewer odoo-feature odoo-lot-close odoo-cadrage odoo-dev odoo-qa; do
     rm -f "$CLAUDE_AGENTS/$old.md" "$CLAUDE_COMMANDS/$old.md"
     rm -rf "$CODEX_SKILLS/$old"
 done
@@ -71,19 +71,19 @@ echo "Génération des profils d'agents Odoo…"
 # Les profils fonctionnel et QA n'écrivent jamais dans le module, mais ils
 # écrivent la revue, la QA et la mémoire du projet (changelog/<lot>/, .odoo-agents/) :
 # ils ont donc Write/Edit, et le rôle borne les chemins.
-emit "odoo-cadrage" "functional-review" \
+emit "odoo-business-analyst" "functional-review" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Avant de coder : cadrer et challenger une demande, écrire la spec" \
     "Analyste fonctionnel contradicteur Odoo (17.0 → saas~19.x, dans la série du projet). À utiliser AVANT tout développement : remonte au problème réel, vérifie dans les sources de la série si le standard ou la base du client couvre déjà le besoin, compare configuration / Studio / code avec leur coût à la migration, remonte contradictions et non-dits (multi-société, droits, reprise de données, modules disparus), pose les questions bloquantes et écrit la spécification avec critères d'acceptation dans le lot. N'écrit pas de code." \
     "blue"
 
-emit "odoo-dev" "implementation" \
+emit "odoo-developer" "implementation" \
     "" \
     "Coder un module custom avec ses tests, dans la série du projet" \
     "Développeur Odoo (17.0 → saas~19.x, dans la série du projet). Écrit ou modifie le code d'un module custom (modèles, vues, sécurité, assets, tests) dans la ligne éditoriale des sources de sa série : ordre des membres, models.Constraint ou _sql_constraints selon la série, Command, api.model_create_multi, <list>, chatter, sécurité livrée avec le code. Livre les tests avec le code, lint des fichiers touchés et tests ciblés avant de rendre." \
     "green"
 
-emit "odoo-qa" "qa-review" \
+emit "odoo-tester" "qa-review" \
     "Read, Grep, Glob, Bash, Write, Edit" \
     "Valider un module : lint, install, tests, tours, copie client" \
     "Relecteur et QA Odoo (17.0 → saas~19.x, dans la série du module). Deux modes : QA de tâche (lint des fichiers touchés, install/update, tests ciblés) pendant un lot ouvert, QA de lot (odoo-recette.sh : base neuve, suite complète, tours Chrome headless, désinstallation, mise à niveau sur la copie du client) à la clôture ou sur demande « valide ce module ». Rend un verdict avec anomalies localisées et écrit qa.md, le journal et la fiche projet." \
@@ -211,7 +211,7 @@ emit_skill "camptocamp-docs" "docs" \
 
 # --- Contrôle : Claude et Codex doivent porter le même texte ------------------
 echo
-for role in functional-review:odoo-cadrage implementation:odoo-dev qa-review:odoo-qa; do
+for role in functional-review:odoo-business-analyst implementation:odoo-developer qa-review:odoo-tester; do
     slug="${role##*:}"
     if diff -q <(sed '1,/^---$/d' "$CLAUDE_AGENTS/$slug.md" | sed '1,/^---$/d') \
                <(sed '1,/^---$/d' "$CODEX_SKILLS/$slug/SKILL.md" | sed '1,/^---$/d') >/dev/null; then

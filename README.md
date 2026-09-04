@@ -49,9 +49,9 @@ jamais supposée, elle est lue (`.odoo-agents/config`, sinon le manifest).
 
 | Profil / commande | Rôle | Quand |
 |---|---|---|
-| `odoo-cadrage` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
-| `odoo-dev` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
-| `odoo-qa` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
+| `odoo-business-analyst` | Analyste fonctionnel **contradicteur** : problème réel derrière la demande, standard de la série et série suivante, configuration / Studio / code avec leur coût à la migration, contradictions, questions bloquantes, spec | avant de coder |
+| `odoo-developer` | Développeur : code dans la ligne éditoriale de sa série, tests livrés avec, lint des fichiers touchés, tests ciblés | pendant le lot |
+| `odoo-tester` | Relecteur & QA, deux modes : **tâche** (diff, lint `--changed`, install/update, tests ciblés) et **lot** (`odoo-recette.sh` : base neuve, suite complète, tours, désinstallation, copie client) | chaque tâche, puis la clôture |
 | `/odoo-demande` | La chaîne sur une demande : briefing → lot → fonctionnel → dev → QA de tâche → journal | chaque demande de dev |
 | `/odoo-cloture` | Clôture du lot : recette complète, recette navigateur, captures, guide, README final, commit proposé, journal | quand la livraison est prête |
 | `/odoo-retex` | Retour d'expérience : relit les journaux et les recettes, vérifie le référentiel contre les sources, promeut les leçons | tous les dix journaux, ou sur incident |
@@ -93,13 +93,13 @@ côté Codex, le même rôle est appliqué en séquence par l'agent principal.
 > /odoo-demande ajoute un champ « référence chantier » sur la commande client
 > /odoo-demande corrige le calcul de la remise sur les lignes de kit      # même lot
 > /odoo-cloture
-> utilise odoo-cadrage pour challenger cette demande : …
-> lance odoo-qa sur alamaison_customisation                     # mode lot
+> utilise odoo-business-analyst pour challenger cette demande : …
+> lance odoo-tester sur alamaison_customisation                     # mode lot
 > /odoo-retex
 ```
 
 Codex : mêmes noms, en skills (`/odoo-demande …`, `/odoo-cloture`, `/odoo-retex`,
-`/odoo-cadrage …`, `/odoo-dev …`, `/odoo-qa …`).
+`/odoo-business-analyst …`, `/odoo-developer …`, `/odoo-tester …`).
 
 ## Arborescence
 

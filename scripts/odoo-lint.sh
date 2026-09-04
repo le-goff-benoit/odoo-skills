@@ -21,7 +21,7 @@
 #   2. odoo_lint.py : manifest, XML, sécurité, tests, motifs datés par série
 #
 # ruff est cherché dans cet ordre : binaire hôte -> module python hôte -> image
-# Docker odoo-qa de la série (qui l'embarque). Si aucun n'est disponible, l'étape est
+# Docker odoo-tester de la série (qui l'embarque). Si aucun n'est disponible, l'étape est
 # signalée comme non exécutée — jamais silencieusement passée.
 
 set -uo pipefail

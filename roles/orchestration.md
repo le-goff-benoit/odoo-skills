@@ -26,8 +26,8 @@ nécessaire (recette sur la copie du client comprise), lot ouvert ou pas.
 ## Comment enchaîner les profils
 
 - **Claude Code** : délègue chaque étape au sous-agent nommé (outil `Agent`,
-  `subagent_type` = `odoo-cadrage`, `odoo-dev`,
-  `odoo-qa`). Le sous-agent ne voit pas cette conversation : sa
+  `subagent_type` = `odoo-business-analyst`, `odoo-developer`,
+  `odoo-tester`). Le sous-agent ne voit pas cette conversation : sa
   consigne contient le **briefing** de l'étape 0, le chemin du lot, et le chemin
   des fichiers produits par l'étape précédente. Il rend un rapport court ; le
   détail vit dans les fichiers du lot.
@@ -70,7 +70,7 @@ les instances déclarées). Elle sert aux trois étapes. Si elle manque et que l
 demande touche des données existantes, demande-la à l'utilisateur dès
 maintenant — sans bloquer la revue fonctionnelle.
 
-## Étape 1 — Revue fonctionnelle (`odoo-cadrage`)
+## Étape 1 — Revue fonctionnelle (`odoo-business-analyst`)
 
 Rôle : `~/.odoo19-agents/roles/functional-review.md`. Il écrit sa revue dans
 `$LOT/revue_fonctionnelle.md` (une section par point si le lot en a plusieurs)
@@ -88,7 +88,7 @@ Puis **décide, et annonce ta décision** :
 Ne t'arrête pas pour une contradiction majeure ou mineure : consigne-la comme
 hypothèse retenue dans la spec, et continue.
 
-## Étape 2 — Implémentation (`odoo-dev`)
+## Étape 2 — Implémentation (`odoo-developer`)
 
 Rôle : `~/.odoo19-agents/roles/implementation.md`, avec la spec de
 `revue_fonctionnelle.md` comme périmètre — ni plus, ni moins. Il livre le code,
@@ -102,7 +102,7 @@ La version du manifest **ne bouge pas à chaque tâche** : elle s'incrémente un
 fois par lot, à la clôture — sauf si le lot est constitué d'une seule tâche à
 livrer tout de suite, auquel cas le développeur l'incrémente maintenant.
 
-## Étape 3 — QA de tâche (`odoo-qa`, mode tâche)
+## Étape 3 — QA de tâche (`odoo-tester`, mode tâche)
 
 Rôle : `~/.odoo19-agents/roles/qa-review.md`, **mode tâche** : relecture du
 diff, lint `--changed`, installation/mise à jour du module sur la base de QA et
